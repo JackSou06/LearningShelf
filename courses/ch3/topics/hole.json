@@ -1,0 +1,120 @@
+{
+  "id": "hole",
+  "title": "超過尾端，再寫入：檔案的洞",
+  "lead": "在支援 sparse file 的檔案系統上，中間未寫入的區域可以不配置對應資料區塊。",
+  "focus": "為什麼邏輯長度可以大於實際配置空間？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/hole.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 35
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 36
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 37
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.6"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 100
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 23"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "diagram",
+      "type": "diagram",
+      "layout": "sparse",
+      "title": "Sparse file（非比例示意）",
+      "segments": [
+        {
+          "text": "10 bytes",
+          "range": "0"
+        },
+        {
+          "text": "讀出零值的區域",
+          "range": "10 … 16383"
+        },
+        {
+          "text": "10 bytes",
+          "range": "16384 … 16393"
+        }
+      ],
+      "metrics": [
+        {
+          "label": "邏輯長度",
+          "value": "16,394"
+        },
+        {
+          "label": "寫入資料量",
+          "value": "20 bytes"
+        }
+      ],
+      "captionMarkdown": "實際配置空間另受檔案系統影響，不能直接等同 20 bytes。"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/hole-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "只做 lseek 到 16384，還沒寫，原本 size=10 會變多少？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "16384"
+        },
+        {
+          "id": "option-1",
+          "text": "16394"
+        },
+        {
+          "id": "option-2",
+          "text": "10"
+        }
+      ],
+      "answerId": "option-2",
+      "explanation": "Seek 只改 offset；後續的寫入才延長檔案。",
+      "revisit": "lseek"
+    }
+  ]
+}

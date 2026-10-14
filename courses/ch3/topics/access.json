@@ -1,0 +1,81 @@
+{
+  "id": "access",
+  "title": "存取模式：讀、寫或讀寫",
+  "lead": "三種存取模式是互斥的選擇，不是可以任意 OR 的獨立能力位元。",
+  "focus": "O_RDONLY | O_WRONLY 會得到 O_RDWR 嗎？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/access.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 17
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 19
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.3、3.14"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 96
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 12"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/access-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "要開啟成讀寫模式，應該使用？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "O_RDONLY | O_WRONLY"
+        },
+        {
+          "id": "option-1",
+          "text": "O_RDWR"
+        },
+        {
+          "id": "option-2",
+          "text": "O_WRONLY | O_CREAT"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "O_RDWR 才是讀寫存取模式；O_CREAT 只控制不存在時是否建立。"
+    }
+  ]
+}

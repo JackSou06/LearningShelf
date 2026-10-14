@@ -1,0 +1,107 @@
+{
+  "id": "offset-size",
+  "title": "讀到哪裡，不等於檔案多大",
+  "lead": "Offset 屬於開啟狀態；size 屬於檔案。",
+  "focus": "Current offset 和 file size 存在同一層嗎？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/offset-size.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 33
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 45
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.6、3.10"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 100
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 10"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "table",
+      "type": "table",
+      "columns": [
+        "狀態",
+        "所在位置",
+        "意義"
+      ],
+      "rows": [
+        [
+          "Current offset",
+          "Open-file entry",
+          "下一次一般讀寫的起點"
+        ],
+        [
+          "File size",
+          "檔案 metadata",
+          "檔案的邏輯長度"
+        ],
+        [
+          "FD_CLOEXEC",
+          "Descriptor entry",
+          "該 fd 在成功 exec 時是否關閉"
+        ]
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/offset-size-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "只改變 current offset，一定也會改 file size 嗎？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "會，兩者永遠相等"
+        },
+        {
+          "id": "option-1",
+          "text": "不會，兩者是不同層的狀態"
+        },
+        {
+          "id": "option-2",
+          "text": "只要 offset 變大就會"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "例如 lseek 到 EOF 以外，只移動位置；還沒寫入就不會延長普通檔案。"
+    }
+  ]
+}

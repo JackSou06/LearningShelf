@@ -1,0 +1,81 @@
+{
+  "id": "readahead-time",
+  "title": "Read-ahead 與三種時間",
+  "lead": "要分清 CPU 花費在哪裡，以及使用者實際等待多久。",
+  "focus": "User time 變少，就代表整體一定更快嗎？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/readahead-time.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 43
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 44
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.9"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 106
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 31、32"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/readahead-time-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "程式等待磁碟 2 秒，幾乎沒有執行指令，最直接增加的是？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "User CPU time"
+        },
+        {
+          "id": "option-1",
+          "text": "Wall-clock time"
+        },
+        {
+          "id": "option-2",
+          "text": "三者都必須增加同樣 2 秒"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "等待會增加經過時間，不必然等量消耗該 process 的 CPU 執行時間。"
+    }
+  ]
+}

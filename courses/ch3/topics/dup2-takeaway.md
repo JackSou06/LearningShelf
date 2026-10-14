@@ -1,0 +1,1 @@
+記參數方向：newfd → oldfd 原本指向的 entry。

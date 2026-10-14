@@ -1,0 +1,94 @@
+{
+  "id": "lseek",
+  "title": "lseek：移動書籤，不搬資料",
+  "lead": "新的 offset = 選定基準 + 位移量；成功回傳更新後的 offset。",
+  "focus": "SEEK_SET、SEEK_CUR、SEEK_END 以哪裡為基準？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/lseek.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 32
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 33
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 34
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.6"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 100
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 19、20、21"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "file-position",
+      "type": "filePosition",
+      "initialText": "0123456789",
+      "maxOffset": 16
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/lseek-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "size=10，執行 lseek(fd, 4, SEEK_END)，成功後？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "offset=14、size=10"
+        },
+        {
+          "id": "option-1",
+          "text": "offset=14、size=14"
+        },
+        {
+          "id": "option-2",
+          "text": "offset=4、size=10"
+        }
+      ],
+      "answerId": "option-0",
+      "explanation": "移動到尾端以外仍不會延長普通檔案；寫入才可能改變長度。"
+    }
+  ]
+}

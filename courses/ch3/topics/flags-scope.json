@@ -1,0 +1,105 @@
+{
+  "id": "flags-scope",
+  "title": "哪些 fd 會一起受到影響？",
+  "lead": "先畫出指向關係，再看 fcntl 改的是哪一層。",
+  "focus": "fd1、dup(fd1)、重新 open 的 fd，誰跟誰共享？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/flags-scope.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 70
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.14；習題 3.3"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 116
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 54"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "diagram",
+      "type": "diagram",
+      "layout": "routes",
+      "routes": [
+        {
+          "label": "fd1 / fd2",
+          "nodes": [
+            "兩個 descriptor",
+            "entry A",
+            "同一檔案"
+          ]
+        },
+        {
+          "label": "fd3",
+          "nodes": [
+            "一個 descriptor",
+            "entry B",
+            "同一檔案"
+          ]
+        }
+      ],
+      "captionMarkdown": "F_SETFD 改個別 descriptor；F_SETFL 改 entry A 或 B 中的狀態。"
+    },
+    {
+      "id": "code",
+      "type": "code",
+      "language": "c",
+      "code": "fd1 = open(path, O_RDWR);\nfd2 = dup(fd1);\nfd3 = open(path, O_RDWR);"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/flags-scope-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "透過 fd1 的 F_SETFL 成功開啟 O_APPEND，哪些 fd 共用這個變更？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "只有 fd1"
+        },
+        {
+          "id": "option-1",
+          "text": "fd1 和 fd2"
+        },
+        {
+          "id": "option-2",
+          "text": "fd1、fd2、fd3"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "Status flags 在 A；fd1、fd2 指向 A。fd3 指向獨立的 B。",
+      "revisit": "three-tables"
+    }
+  ]
+}

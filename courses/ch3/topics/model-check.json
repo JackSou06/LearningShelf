@@ -1,0 +1,89 @@
+{
+  "id": "model-check",
+  "title": "先練：把狀態放回圖裡",
+  "lead": "因為「同一個檔案」不代表「同一個 open-file entry」。",
+  "focus": "為什麼同一個檔案可以有多個 offset？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/model-check.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 29
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 30
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 73
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.10"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 108
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 9、10、34"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/model-check-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "同一 process 對相同普通檔案成功 open 兩次，結構是？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "兩個 fd → 一個 open-file entry"
+        },
+        {
+          "id": "option-1",
+          "text": "兩個 fd → 兩個 open-file entries → 同一檔案"
+        },
+        {
+          "id": "option-2",
+          "text": "一個 fd → 兩個檔案"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "各次 open 有自己的 offset 與 status flags；檔案內容仍是同一份。",
+      "revisit": "three-tables"
+    }
+  ]
+}

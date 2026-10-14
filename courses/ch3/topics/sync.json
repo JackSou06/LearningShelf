@@ -1,0 +1,108 @@
+{
+  "id": "sync",
+  "title": "sync、fsync、fdatasync",
+  "lead": "fsync 與 fdatasync 針對指定檔案；sync 的範圍較廣，等待保證需看標準與實作。",
+  "focus": "要等某個檔案同步，應該看哪個介面？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/sync.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 61
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.13"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 115
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 49"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        },
+        {
+          "sourceId": "web-sync-0"
+        }
+      ]
+    },
+    {
+      "id": "table",
+      "type": "table",
+      "columns": [
+        "介面",
+        "範圍／重點"
+      ],
+      "rows": [
+        [
+          "fflush",
+          "把 stdio 輸出交給底層"
+        ],
+        [
+          "fsync",
+          "指定檔案的資料與相關 metadata"
+        ],
+        [
+          "fdatasync",
+          "資料與讀回必要 metadata"
+        ],
+        [
+          "sync",
+          "廣泛同步；等待語意依標準與 OS"
+        ]
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/sync-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "fdatasync 可以忽略「延長檔案後的新 size」嗎？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "可以，因為它完全不管 metadata"
+        },
+        {
+          "id": "option-1",
+          "text": "不可以，size 是正確讀回資料所需資訊"
+        },
+        {
+          "id": "option-2",
+          "text": "只有 fflush 會管 size"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "Data synchronization 仍要涵蓋讀回資料所必要的 metadata，不能理解成一律不寫 metadata。"
+    },
+    {
+      "id": "links",
+      "type": "markdown",
+      "file": "topics/sync-links.md"
+    }
+  ]
+}

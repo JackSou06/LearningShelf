@@ -1,0 +1,96 @@
+{
+  "id": "atomic-check",
+  "title": "原子性要問：保護的是哪個範圍？",
+  "lead": "保證通常有明確範圍；要把它對應到你想完成的邏輯操作。",
+  "focus": "用了 atomic API，整段程式就不會競爭嗎？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/atomic-check.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 47
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 50
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 51
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 52
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.11、3.12"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 111
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 37、38、39、40、43"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/atomic-check-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "O_APPEND 下連續 write(\"A\")、write(\"B\")，可以保證沒有別人的資料插在兩者間嗎？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "可以，因為有 O_APPEND"
+        },
+        {
+          "id": "option-1",
+          "text": "不可以，兩次呼叫間仍可交錯"
+        },
+        {
+          "id": "option-2",
+          "text": "只要使用同一 fd 就可以"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "Append 的單次定位與寫入保證，不會把兩個 system calls 包成一個交易。",
+      "revisit": "append"
+    }
+  ]
+}

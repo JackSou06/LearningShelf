@@ -1,0 +1,1 @@
+Unbuffered 的比較對象是 C stdio buffering。

@@ -1,0 +1,99 @@
+{
+  "id": "three-tables",
+  "title": "三層結構：整章的共同語言",
+  "lead": "fd entry 指向 open-file entry；open-file entry 再指向檔案的 vnode/inode 資訊。",
+  "focus": "fd、開啟狀態、檔案本體，分別是哪一層？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/three-tables.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 24
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 25
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 26
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 27
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.10"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 108
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 0、9"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "diagram",
+      "type": "diagram",
+      "layout": "flow",
+      "nodes": [
+        {
+          "kicker": "01 · PER PROCESS",
+          "title": "Descriptor table",
+          "detailMarkdown": "fd → pointer\ndescriptor flags"
+        },
+        {
+          "kicker": "02 · OPEN FILE",
+          "title": "Open-file entry",
+          "detailMarkdown": "current offset\nfile status flags",
+          "dark": true
+        },
+        {
+          "kicker": "03 · FILE OBJECT",
+          "title": "vnode / inode",
+          "detailMarkdown": "file size\nmetadata"
+        }
+      ],
+      "captionMarkdown": "fd table 由 Kernel 管理；「per-process」描述歸屬，不代表它存在 user space。",
+      "title": "Kernel 資料結構"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/three-tables-takeaway.md",
+      "role": "takeaway"
+    }
+  ]
+}

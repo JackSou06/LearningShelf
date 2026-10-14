@@ -1,0 +1,82 @@
+{
+  "id": "cloexec",
+  "title": "FD_CLOEXEC：什麼時候關閉？",
+  "lead": "Close-on-exec 的作用時機是成功 exec，不是 fork。",
+  "focus": "它會在 fork 時把 child 的 fd 關掉嗎？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/cloexec.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 52
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 66
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.12、3.14"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 113
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 52、56"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/cloexec-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "fd1 設了 FD_CLOEXEC，fd2=dup(fd1) 成功後，新 fd2 的該旗標？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "自動跟 fd1 共用"
+        },
+        {
+          "id": "option-1",
+          "text": "通常被清除，屬於自己的 descriptor flags"
+        },
+        {
+          "id": "option-2",
+          "text": "fork 前才會有這個旗標"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "Dup 共用 file status flags，但新 descriptor 的 close-on-exec 會清除。",
+      "revisit": "flags-scope"
+    }
+  ]
+}

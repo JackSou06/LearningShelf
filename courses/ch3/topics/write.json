@@ -1,0 +1,89 @@
+{
+  "id": "write",
+  "title": "write：成功也可能只寫入一部分",
+  "lead": "應檢查實際寫入 bytes；short write 需要在正確的位置繼續處理。",
+  "focus": "write 回傳正數，就能忽略回傳量嗎？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/write.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 38
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 39
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 45
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.8"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 106
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 28、33"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/write-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "size=6、offset=2，成功 write 2 bytes 後，size 是？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "2"
+        },
+        {
+          "id": "option-1",
+          "text": "4"
+        },
+        {
+          "id": "option-2",
+          "text": "6"
+        }
+      ],
+      "answerId": "option-2",
+      "explanation": "寫入只覆蓋位置 2、3，沒有超過原本 EOF；offset 才變成 4。",
+      "revisit": "offset-size"
+    }
+  ]
+}

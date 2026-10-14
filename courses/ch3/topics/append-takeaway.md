@@ -1,0 +1,1 @@
+Append 是每次 write 的規則，不是開啟時只設定一次 offset。

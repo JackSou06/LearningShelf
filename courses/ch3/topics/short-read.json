@@ -1,0 +1,74 @@
+{
+  "id": "short-read",
+  "title": "Short read、EOF 與 EINTR",
+  "lead": "先分辨正數、0、-1，再看資料來源與錯誤原因。",
+  "focus": "沒有讀滿，應該重試還是停止？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/short-read.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 38
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.7"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 105
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 25、26、27"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/short-read-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "read 回傳 7，小於要求的 100，下一步最合理的是？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "丟掉資料，直到讀滿才算成功"
+        },
+        {
+          "id": "option-1",
+          "text": "先處理這 7 bytes，再依需求繼續"
+        },
+        {
+          "id": "option-2",
+          "text": "立刻把 errno 當成本次失敗原因"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "只有失敗時才以 errno 判斷錯誤；正數回傳代表有有效資料。"
+    }
+  ]
+}

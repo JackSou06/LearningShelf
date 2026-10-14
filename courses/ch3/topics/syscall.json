@@ -1,0 +1,105 @@
+{
+  "id": "syscall",
+  "title": "函式呼叫，如何走進 Kernel？",
+  "lead": "呼叫形式都是 C 函式；需要作業系統服務時，執行會經由系統呼叫進入 Kernel。",
+  "focus": "read() 和自己寫的 add() 差在哪？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/syscall.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 3
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 4
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 11
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.1"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 95
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 1"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "diagram",
+      "type": "diagram",
+      "layout": "routes",
+      "routes": [
+        {
+          "label": "執行路徑",
+          "nodes": [
+            "User code",
+            "System call",
+            "Kernel service",
+            "Return"
+          ]
+        }
+      ],
+      "captionMarkdown": "權限模式：user → kernel → user。是否另行排程其他 process，是另一個問題。"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/syscall-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "read() 進入 Kernel 時，一定會發生什麼？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "切換到另一個 process"
+        },
+        {
+          "id": "option-1",
+          "text": "經過系統呼叫介面執行 Kernel 服務"
+        },
+        {
+          "id": "option-2",
+          "text": "直接讀取一次硬碟"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "系統呼叫涉及 Kernel 服務，但可能直接由 cache 回傳，也不一定換 process。"
+    }
+  ]
+}

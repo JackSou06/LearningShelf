@@ -1,0 +1,102 @@
+{
+  "id": "sharing-check",
+  "title": "換個題目，你還能推導嗎？",
+  "lead": "先建立 A、B 兩個 entry，再逐行追蹤，別只記住前面例題的字母。",
+  "focus": "混合 open、dup 與 read 時，誰的 offset 會動？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/sharing-check.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 53
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 55
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 57
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 70
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.10、3.12"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 108
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 34、41、42、61"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "code",
+      "type": "code",
+      "language": "c",
+      "code": "a = open(\"foobar.txt\", O_RDONLY);\nb = dup(a);\nc = open(\"foobar.txt\", O_RDONLY);\nread(a, &x, 1);\nread(c, &y, 1);\nread(b, &z, 1);"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/sharing-check-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "x、y、z 分別是？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "f、o、o"
+        },
+        {
+          "id": "option-1",
+          "text": "f、f、o"
+        },
+        {
+          "id": "option-2",
+          "text": "f、f、f"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "a 讀 f，A 到 1；c 讀 f，B 到 1；b 用 A 的位置 1 讀 o，A 到 2。",
+      "revisit": "compare-sharing"
+    }
+  ]
+}

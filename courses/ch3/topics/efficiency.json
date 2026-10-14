@@ -1,0 +1,87 @@
+{
+  "id": "efficiency",
+  "title": "Buffer 大小：省下的是哪些成本？",
+  "lead": "搬相同資料時，較大的批次通常可以減少 system call 次數。",
+  "focus": "一次讀 1 byte 和一次讀 4096 bytes，差在哪？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/efficiency.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 40
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 41
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 42
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 43
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.9"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 106
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 30"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "call-count",
+      "type": "callCount",
+      "bytes": 1048576,
+      "buffers": [
+        1,
+        64,
+        512,
+        4096,
+        65536
+      ],
+      "initialBuffer": 4096
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/efficiency-takeaway.md",
+      "role": "takeaway"
+    }
+  ]
+}

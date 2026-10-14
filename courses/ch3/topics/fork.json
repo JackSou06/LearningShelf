@@ -1,0 +1,268 @@
+{
+  "id": "fork",
+  "title": "演練 ③ fork：兩個 process，共享位置",
+  "lead": "fork 讓 child 繼承 descriptor table 的對應關係，指向既有的 open-file entries。",
+  "focus": "子 process 讀過之後，父 process 會從哪裡讀？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/fork.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 31
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 55
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 56
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.10；fork 詳見 8.3"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 108
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 35、36"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "lab",
+      "type": "steps",
+      "presentation": "program",
+      "initialState": true,
+      "steps": [
+        {
+          "id": "initial",
+          "title": "初始狀態",
+          "bodyMarkdown": "圖中省略未涉及的 fd；∅ 表示 EOF。",
+          "snapshot": {
+            "processes": {
+              "P": {}
+            },
+            "entries": {},
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-1",
+          "title": "步驟 1",
+          "code": "fd1 = open(\"foobar.txt\", O_RDONLY);",
+          "bodyMarkdown": "配置 fd 3，建立 entry A，offset 從 0 開始。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 0,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-2",
+          "title": "步驟 2",
+          "code": "pid = fork();",
+          "bodyMarkdown": "新增 child 的 fd table；繼承的 fd 3 仍指向 A。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A"
+              },
+              "Child": {
+                "3": "A"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 0,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 2
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-3",
+          "title": "步驟 3",
+          "code": "/* child */ read(fd1, &c, 1);",
+          "bodyMarkdown": "child 先讀到 f；共享 entry A 的 offset 變成 1。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A"
+              },
+              "Child": {
+                "3": "A"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 1,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 2
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "f"
+          }
+        },
+        {
+          "id": "step-4",
+          "title": "步驟 4",
+          "code": "/* child */ _exit(0);",
+          "bodyMarkdown": "child 結束，關閉它的 fd；parent 仍保有 A 的參考。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 1,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "f"
+          }
+        },
+        {
+          "id": "step-5",
+          "title": "步驟 5",
+          "code": "/* parent */ wait(NULL);",
+          "bodyMarkdown": "parent 確認 child 已結束；wait 本身不重設 offset。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 1,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "f"
+          }
+        },
+        {
+          "id": "step-6",
+          "title": "步驟 6",
+          "code": "/* parent */ read(fd1, &c, 1);",
+          "bodyMarkdown": "parent 沿著 A 從 offset 1 讀到 o。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 2,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "o"
+          }
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/fork-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "child 讀一 byte 並結束，parent wait 完再讀，parent 得到？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "f，因為是不同 process"
+        },
+        {
+          "id": "option-1",
+          "text": "o，因為共享 entry 的 offset"
+        },
+        {
+          "id": "option-2",
+          "text": "一定是 EOF"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "不同 process 不代表不同開啟狀態；繼承的 fd 仍指向同一個 entry。",
+      "revisit": "three-tables"
+    }
+  ]
+}

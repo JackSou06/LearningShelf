@@ -1,0 +1,240 @@
+{
+  "id": "two-opens",
+  "title": "演練 ① 同一檔案，open 兩次",
+  "lead": "兩次獨立 open 建立兩份開啟狀態，各有自己的 offset。",
+  "focus": "第二個 fd 會接著第一個的位置讀嗎？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/two-opens.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 29
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 30
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 53
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 54
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.10"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 108
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 34、42"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "lab",
+      "type": "steps",
+      "presentation": "program",
+      "initialState": true,
+      "steps": [
+        {
+          "id": "initial",
+          "title": "初始狀態",
+          "bodyMarkdown": "圖中省略未涉及的 fd；∅ 表示 EOF。",
+          "snapshot": {
+            "processes": {
+              "P": {}
+            },
+            "entries": {},
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-1",
+          "title": "步驟 1",
+          "code": "fd1 = open(\"foobar.txt\", O_RDONLY);",
+          "bodyMarkdown": "配置 fd 3，建立 entry A，offset 從 0 開始。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 0,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-2",
+          "title": "步驟 2",
+          "code": "fd2 = open(\"foobar.txt\", O_RDONLY);",
+          "bodyMarkdown": "第二次 open 建立獨立 entry B；兩個 entry 指向同一檔案。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A",
+                "4": "B"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 0,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              },
+              "B": {
+                "offset": 0,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-3",
+          "title": "步驟 3",
+          "code": "read(fd1, &c, 1);",
+          "bodyMarkdown": "由 fd1 指向的 A 讀取 f；A 的 offset 前進到 1。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A",
+                "4": "B"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 1,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              },
+              "B": {
+                "offset": 0,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "f"
+          }
+        },
+        {
+          "id": "step-4",
+          "title": "步驟 4",
+          "code": "read(fd2, &c, 1);",
+          "bodyMarkdown": "B 的 offset 仍是 0，因此又讀到 f。A、B 最後各停在 1。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A",
+                "4": "B"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 1,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              },
+              "B": {
+                "offset": 1,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "f"
+          }
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/two-opens-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "兩次 open 後，分別 read(fd1,1)、read(fd2,1)，第二次得到？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "f"
+        },
+        {
+          "id": "option-1",
+          "text": "o"
+        },
+        {
+          "id": "option-2",
+          "text": "b"
+        }
+      ],
+      "answerId": "option-0",
+      "explanation": "fd1 推進 A 的 offset，不會推進 B；fd2 仍從位置 0 讀 f。",
+      "revisit": "three-tables"
+    }
+  ]
+}

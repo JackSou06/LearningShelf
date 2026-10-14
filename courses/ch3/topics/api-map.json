@@ -1,0 +1,104 @@
+{
+  "id": "api-map",
+  "title": "查 API，先問你想改變什麼",
+  "lead": "把需求翻譯成「操作哪個狀態」，再找對應 API。",
+  "focus": "遇到新題目，要從哪裡開始選工具？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/api-map.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 73
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.17"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 124
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 59、61、62、63"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "table",
+      "type": "table",
+      "columns": [
+        "需求",
+        "工具",
+        "重點"
+      ],
+      "rows": [
+        [
+          "建立獨立開啟狀態",
+          "open",
+          "新的 open-file entry"
+        ],
+        [
+          "共用既有開啟狀態",
+          "dup / dup2",
+          "新增或替換 fd 連結"
+        ],
+        [
+          "改下一次一般 I/O 位置",
+          "lseek",
+          "只改 offset"
+        ],
+        [
+          "讀指定位置而不動共享 offset",
+          "pread",
+          "offset 是本次參數"
+        ],
+        [
+          "每次寫入選當下 EOF",
+          "O_APPEND",
+          "單次 append 定位語意"
+        ],
+        [
+          "要求不存在才建立",
+          "O_CREAT | O_EXCL",
+          "條件與建立結合"
+        ],
+        [
+          "同步指定檔案",
+          "fsync / fdatasync",
+          "檢查同步完成與錯誤"
+        ],
+        [
+          "修改 fd / open-file flags",
+          "fcntl",
+          "區分 FD 與 FL"
+        ]
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/api-map-takeaway.md",
+      "role": "takeaway"
+    }
+  ]
+}

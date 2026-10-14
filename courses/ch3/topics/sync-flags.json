@@ -1,0 +1,88 @@
+{
+  "id": "sync-flags",
+  "title": "O_SYNC 與 O_DSYNC：把要求帶進 write",
+  "lead": "開啟時的同步 flags，讓每次寫入依選定的完成條件返回。",
+  "focus": "每次 write 都要同步，與最後 fsync 有何不同？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/sync-flags.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 62
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 63
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 64
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 65
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.3、3.14"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 96
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 50"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        },
+        {
+          "sourceId": "web-sync-flags-0"
+        }
+      ]
+    },
+    {
+      "id": "code",
+      "type": "code",
+      "language": "c",
+      "code": "int fd = open(\"log.txt\", O_WRONLY | O_CREAT | O_APPEND | O_SYNC, 0644);\n// 檢查 open / write 的回傳值；不要假設 F_SETFL 能補設 O_SYNC。"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/sync-flags-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "links",
+      "type": "markdown",
+      "file": "topics/sync-flags-links.md"
+    }
+  ]
+}

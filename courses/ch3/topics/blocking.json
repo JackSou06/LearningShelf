@@ -1,0 +1,81 @@
+{
+  "id": "blocking",
+  "title": "Blocking、AIO、同步寫入分開看",
+  "lead": "Nonblocking 描述無法立即進行時的回傳行為，不等於提交一筆背景工作。",
+  "focus": "Nonblocking 就等於稍後在背景幫我完成嗎？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/blocking.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 20
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 21
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.3；進階 I/O 詳見 14.2、14.5"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 96
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 18"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/blocking-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "Nonblocking pipe read 回傳 EAGAIN，代表？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "OS 已接受背景讀取，之後會自動完成"
+        },
+        {
+          "id": "option-1",
+          "text": "目前無法取得資料，程式需依策略稍後再試"
+        },
+        {
+          "id": "option-2",
+          "text": "資料已同步到磁碟"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "EAGAIN 是當下無法進行；需要 readiness 等機制決定何時再次呼叫。"
+    }
+  ]
+}

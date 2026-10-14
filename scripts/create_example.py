@@ -1,0 +1,10 @@
+from pathlib import Path
+import json
+base=Path(__file__).resolve().parents[1]/'courses'/'linear-algebra';(base/'topics').mkdir(parents=True,exist_ok=True)
+def write(name,value): (base/name).write_text(json.dumps(value,ensure_ascii=False,indent=2))
+write('course.json',{'schemaVersion':'1.0','courseId':'example-linear-algebra','contentVersion':'1.0.1','title':'線性代數入門','language':'zh-Hant','audience':'初學者','objectives':['解釋向量與線性組合'],'modules':[{'id':'vectors','title':'向量與組合','topics':['vector','linear-combination']}],'topics':[{'id':x,'file':f'topics/{x}.json'}for x in ['vector','linear-combination']],'sources':[{'id':'author','title':'自編入門範例，用於展示通用課程格式','kind':'reference'}]})
+(base/'topics/vector.md').write_text('向量可以表示具有多個分量的量。二維向量 (2, 3) 可表示平面上的位移：往 x 方向 2，往 y 方向 3。\n\n相加時各分量相加：(2, 3) + (1, -1) = (3, 2)。純量倍數會同時縮放各個分量。')
+write('topics/vector.json',{'id':'vector','title':'向量與分量','blocks':[{'id':'body','type':'markdown','file':'topics/vector.md'},{'id':'table','type':'table','columns':['操作','結果'],'rows':[['(2, 3) + (1, -1)','(3, 2)'],['2 × (2, 3)','(4, 6)']]},{'id':'predict','type':'reveal','prompt':'先想想：零向量加上 (2, 3) 會怎樣？','answerMarkdown':'仍是 (2, 3)。零向量的每個分量都是 0。'}]})
+(base/'topics/linear-combination.md').write_text('給定向量 u 與 v，先分別乘上純量 a、b，再相加。所得 a u + b v 就是 u、v 的線性組合。\n\n係數可以是零或負數；不要求每個向量都對結果產生非零貢獻。')
+write('topics/linear-combination.json',{'id':'linear-combination','title':'什麼是線性組合？','prerequisites':['vector'],'blocks':[{'id':'body','type':'markdown','file':'topics/linear-combination.md'},{'id':'formula','type':'math','latex':'a\\mathbf{u}+b\\mathbf{v}','description':'向量 u 乘 a，加上向量 v 乘 b。'},{'id':'example','type':'steps','steps':[{'id':'choose','title':'選向量','bodyMarkdown':'u = (1, 0)，v = (0, 1)。'},{'id':'scale','title':'乘上係數','bodyMarkdown':'2u = (2, 0)，3v = (0, 3)。'},{'id':'add','title':'分量相加','bodyMarkdown':'2u + 3v = (2, 3)。'}]},{'id':'check','type':'singleChoice','question':'線性組合包含哪兩種操作？','options':[{'id':'scale-add','text':'向量乘純量，再相加'},{'id':'length','text':'只比較向量長度'}],'answerId':'scale-add','explanation':'先對各向量乘上係數，再把結果相加。'}]})
+print('Created non-programming course: 2 topics.')

@@ -1,0 +1,139 @@
+{
+  "id": "compare-sharing",
+  "title": "把 open、dup、fork 放在一起",
+  "lead": "看箭頭是否落在同一個 open-file entry，而不是只看檔名或 fd 數字。",
+  "focus": "判斷共享時，第一步應該看什麼？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/compare-sharing.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 29
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 30
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 31
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 52
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 53
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 55
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.10、3.12"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 108
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 34、35、41、42"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "table",
+      "type": "table",
+      "columns": [
+        "方式",
+        "Descriptor tables",
+        "Open-file entry",
+        "Offset"
+      ],
+      "rows": [
+        [
+          "open 同檔兩次",
+          "可以在同一 process",
+          "各自建立",
+          "獨立"
+        ],
+        [
+          "dup(fd)",
+          "同一 process 中增加 fd",
+          "共用原 entry",
+          "共享"
+        ],
+        [
+          "fork 繼承 fd",
+          "parent / child 各一份",
+          "共用繼承的 entry",
+          "共享"
+        ]
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/compare-sharing-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "兩個獨立 open 的 fd，其中一個改寫檔案後，另一個的 offset？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "自動跳到新 EOF"
+        },
+        {
+          "id": "option-1",
+          "text": "仍保有自己的 offset"
+        },
+        {
+          "id": "option-2",
+          "text": "變成 -1"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "檔案內容與 size 可改變，但獨立 entry 的 current offset 不會因此自動跟著移動。"
+    }
+  ]
+}

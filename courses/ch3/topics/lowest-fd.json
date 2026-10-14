@@ -1,0 +1,80 @@
+{
+  "id": "lowest-fd",
+  "title": "open 會填進最小的空格",
+  "lead": "成功的 open 選擇目前最低號碼、尚未使用的 fd。",
+  "focus": "close(1) 之後，下一次 open 回傳多少？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/lowest-fd.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 28
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.2、3.3"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 95
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 8"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "code",
+      "type": "code",
+      "language": "c",
+      "code": "close(1);\nint fd = open(\"notes.txt\", O_RDONLY);\n// 假設 open 成功，且中間沒有其他 fd 配置。"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/lowest-fd-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "只有 fd 0、2、3 使用中，下次成功的 open 回傳？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "0"
+        },
+        {
+          "id": "option-1",
+          "text": "1"
+        },
+        {
+          "id": "option-2",
+          "text": "4"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "最低的空位是 1。fd 並不是檔案數量，也不是只能往上增加。"
+    }
+  ]
+}

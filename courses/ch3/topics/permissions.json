@@ -1,0 +1,80 @@
+{
+  "id": "permissions",
+  "title": "Mode 與 umask：權限如何留下？",
+  "lead": "在一般沒有預設 ACL 介入的情況，新建權限是 mode & ~umask。",
+  "focus": "要求 0666，為何常得到 0644？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/permissions.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 23
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.3；umask 詳見 4.8"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 96
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 14"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "code",
+      "type": "code",
+      "language": "c",
+      "code": "mode   = 0666;  // rw-rw-rw-\numask  = 0022;  // 移除 group、other 的 w\nresult = 0644;  // rw-r--r--"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/permissions-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "mode=0600、umask=0022，基本遮罩規則的結果？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "0576"
+        },
+        {
+          "id": "option-1",
+          "text": "0600"
+        },
+        {
+          "id": "option-2",
+          "text": "0622"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "被遮掉的位元本來就沒有設定，因此仍是 0600；不能直接做減法。"
+    }
+  ]
+}

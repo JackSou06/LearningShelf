@@ -1,0 +1,218 @@
+{
+  "id": "final-review",
+  "title": "最後一輪：把模型帶到新題目",
+  "lead": "完成以下混合題，再把仍不確定的概念留在待複習清單。",
+  "focus": "離開講義後，你還能自己解釋嗎？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/final-review.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 53
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 55
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 57
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 70
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 73
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.17；習題 3.3、3.4、3.6"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 124
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 61、62、63"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        },
+        {
+          "sourceId": "example"
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/final-review-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "size=6，seek 到 20 但還沒 write，size 是？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "6"
+        },
+        {
+          "id": "option-1",
+          "text": "20"
+        },
+        {
+          "id": "option-2",
+          "text": "26"
+        }
+      ],
+      "answerId": "option-0",
+      "explanation": "Seek 不延長檔案。",
+      "revisit": "hole"
+    },
+    {
+      "id": "quiz-1",
+      "type": "singleChoice",
+      "question": "fd2=dup(fd1)，透過 fd2 成功 lseek 到 4，fd1 下一次一般 read 從哪開始？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "原本位置"
+        },
+        {
+          "id": "option-1",
+          "text": "位置 4"
+        },
+        {
+          "id": "option-2",
+          "text": "一律從開頭"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "Dup 共用 current offset。",
+      "revisit": "dup"
+    },
+    {
+      "id": "quiz-2",
+      "type": "singleChoice",
+      "question": "fd1、fd2 共用 entry，對 fd1 設 FD_CLOEXEC，影響？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "fd1"
+        },
+        {
+          "id": "option-1",
+          "text": "fd1 與 fd2"
+        },
+        {
+          "id": "option-2",
+          "text": "同檔所有 fd"
+        }
+      ],
+      "answerId": "option-0",
+      "explanation": "Descriptor flags 屬於個別 fd entry。",
+      "revisit": "flags-scope"
+    },
+    {
+      "id": "quiz-3",
+      "type": "singleChoice",
+      "question": "多個 writer 各自 lseek 到 EOF 後再 write，哪個說法正確？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "各有 offset 所以不可能衝突"
+        },
+        {
+          "id": "option-1",
+          "text": "可能因為舊 EOF 位置而覆蓋"
+        },
+        {
+          "id": "option-2",
+          "text": "一定會依 process ID 排序"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "兩次呼叫的間隙允許另一個 writer 改變檔案長度。",
+      "revisit": "race"
+    },
+    {
+      "id": "quiz-4",
+      "type": "singleChoice",
+      "question": "Short write 回傳正數 n，小於剩餘量，下一步？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "從原 buffer 開頭重寫整批"
+        },
+        {
+          "id": "option-1",
+          "text": "從已完成 n bytes 後繼續"
+        },
+        {
+          "id": "option-2",
+          "text": "一律當 EOF"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "要保留已寫入的進度，避免重複資料。",
+      "revisit": "copy-loop"
+    },
+    {
+      "id": "quiz-5",
+      "type": "singleChoice",
+      "question": "write 成功後，再用 fsync(fd) 的主要目的？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "重設 offset"
+        },
+        {
+          "id": "option-1",
+          "text": "對該檔案要求同步完成"
+        },
+        {
+          "id": "option-2",
+          "text": "把 fd 轉成 FILE*"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "資料可能還在 Kernel cache；fsync 提出同步完成要求並需檢查錯誤。",
+      "revisit": "sync"
+    }
+  ],
+  "assessment": true,
+  "backTo": "start"
+}

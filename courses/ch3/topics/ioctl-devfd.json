@@ -1,0 +1,60 @@
+{
+  "id": "ioctl-devfd",
+  "title": "ioctl 與 /dev/fd：介面的邊界",
+  "lead": "ioctl 提供裝置特定控制；/dev/fd 讓 pathname 型工具接觸已開啟的 descriptor。",
+  "focus": "哪些操作不適合只用 read / write 表達？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/ioctl-devfd.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 71
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 72
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.15、3.16（含 Linux 差異說明）"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 121
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 57、58"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/ioctl-devfd-takeaway.md",
+      "role": "takeaway"
+    }
+  ]
+}

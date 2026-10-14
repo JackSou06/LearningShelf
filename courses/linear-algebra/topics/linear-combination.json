@@ -1,0 +1,58 @@
+{
+  "id": "linear-combination",
+  "title": "什麼是線性組合？",
+  "prerequisites": [
+    "vector"
+  ],
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/linear-combination.md"
+    },
+    {
+      "id": "formula",
+      "type": "math",
+      "latex": "a\\mathbf{u}+b\\mathbf{v}",
+      "description": "向量 u 乘 a，加上向量 v 乘 b。"
+    },
+    {
+      "id": "example",
+      "type": "steps",
+      "steps": [
+        {
+          "id": "choose",
+          "title": "選向量",
+          "bodyMarkdown": "u = (1, 0)，v = (0, 1)。"
+        },
+        {
+          "id": "scale",
+          "title": "乘上係數",
+          "bodyMarkdown": "2u = (2, 0)，3v = (0, 3)。"
+        },
+        {
+          "id": "add",
+          "title": "分量相加",
+          "bodyMarkdown": "2u + 3v = (2, 3)。"
+        }
+      ]
+    },
+    {
+      "id": "check",
+      "type": "singleChoice",
+      "question": "線性組合包含哪兩種操作？",
+      "options": [
+        {
+          "id": "scale-add",
+          "text": "向量乘純量，再相加"
+        },
+        {
+          "id": "length",
+          "text": "只比較向量長度"
+        }
+      ],
+      "answerId": "scale-add",
+      "explanation": "先對各向量乘上係數，再把結果相加。"
+    }
+  ]
+}

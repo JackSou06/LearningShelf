@@ -1,0 +1,59 @@
+{
+  "id": "openat",
+  "title": "openat：把路徑的起點固定下來",
+  "lead": "相對路徑可以從指定目錄開始解析，不必依賴 process 當下的工作目錄。",
+  "focus": "使用 directory fd，解決的是哪一種不確定？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/openat.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 18
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.3"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 96
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 17"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "code",
+      "type": "code",
+      "language": "c",
+      "code": "int fd = openat(dirfd, \"data.txt\", O_RDONLY);\n// dirfd 必須是有效目錄 fd；檢查 fd == -1。"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/openat-takeaway.md",
+      "role": "takeaway"
+    }
+  ]
+}

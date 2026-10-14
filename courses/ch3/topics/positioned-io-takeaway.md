@@ -1,0 +1,1 @@
+定位 I/O 解開的是共享 current offset，不是任意寫入衝突。

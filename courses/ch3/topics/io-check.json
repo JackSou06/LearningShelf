@@ -1,0 +1,95 @@
+{
+  "id": "io-check",
+  "title": "小結：分別追蹤位置與內容",
+  "lead": "每一行分別更新 offset、file size 與檔案內容，沒有改變的就保留。",
+  "focus": "兩次定位與讀寫之後，你能算出每個狀態嗎？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/io-check.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 32
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 38
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 45
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.6–3.8"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 100
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 19、24、28"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "code",
+      "type": "code",
+      "language": "c",
+      "code": "lseek(fd, 2, SEEK_SET);\nread(fd, buf, 2);\nwrite(fd, \"X\", 1);"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/io-check-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "最後的檔案內容與 offset 是？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "abXdef；offset=3"
+        },
+        {
+          "id": "option-1",
+          "text": "abcdXf；offset=5"
+        },
+        {
+          "id": "option-2",
+          "text": "abcdefX；offset=7"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "Read 從位置 2 讀到 cd，offset 到 4；write 在位置 4 覆蓋 e，得到 abcdXf，offset 到 5，size 仍是 6。",
+      "revisit": "offset-size"
+    }
+  ]
+}

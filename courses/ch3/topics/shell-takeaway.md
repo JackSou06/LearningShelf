@@ -1,0 +1,1 @@
+Unix 工具可以透過穩定的 stdin/stdout 介面組合。

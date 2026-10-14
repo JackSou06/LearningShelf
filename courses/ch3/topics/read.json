@@ -1,0 +1,80 @@
+{
+  "id": "read",
+  "title": "read：回傳值才是本次讀到的量",
+  "lead": "nbytes 是上限；程式必須根據 read 的實際回傳值處理資料。",
+  "focus": "要求讀 100 bytes，就一定得到 100 嗎？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/read.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 38
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.7"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 105
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 24、26"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "code",
+      "type": "code",
+      "language": "c",
+      "code": "char buf[100];\nssize_t n = read(fd, buf, sizeof buf);\n// n > 0 時，只有 buf[0] ... buf[n-1] 是本次讀到的資料。"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/read-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "檔案剩 3 bytes，read 要求 100 並回傳 3，代表？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "失敗，因為沒有讀滿"
+        },
+        {
+          "id": "option-1",
+          "text": "成功讀到 3 bytes"
+        },
+        {
+          "id": "option-2",
+          "text": "已讀到 100，只是回報 3"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "Short read 可以是正常結果。處理實際讀到的 3 bytes，再依需要繼續讀。"
+    }
+  ]
+}

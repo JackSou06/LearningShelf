@@ -1,0 +1,272 @@
+{
+  "id": "append",
+  "title": "O_APPEND：每次 write 都重新選尾端",
+  "lead": "Append 將該次寫入的 EOF 定位與寫入結合，不依賴先前存下的尾端位置。",
+  "focus": "它與一開始 seek 到 EOF 有什麼不同？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/append.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 38
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 46
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 47
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 48
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.8、3.11；習題 3.6"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 106
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 29、38"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "lab",
+      "type": "steps",
+      "presentation": "program",
+      "initialState": true,
+      "steps": [
+        {
+          "id": "initial",
+          "title": "初始狀態",
+          "bodyMarkdown": "A、B 各自開啟同一個 log，各有自己的 entry。",
+          "snapshot": {
+            "processes": {
+              "Process A": {
+                "3": "A"
+              },
+              "Process B": {
+                "3": "B"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 0,
+                "file": "log.txt",
+                "flags": "O_WRONLY | O_APPEND",
+                "refs": 1
+              },
+              "B": {
+                "offset": 0,
+                "file": "log.txt",
+                "flags": "O_WRONLY | O_APPEND",
+                "refs": 1
+              }
+            },
+            "files": {
+              "log.txt": "log"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-1",
+          "title": "步驟 1",
+          "code": "/* A */ lseek(fd, 0, SEEK_END);",
+          "bodyMarkdown": "為了比較，沿用上一頁的排程；A 暫時定位到 3。",
+          "snapshot": {
+            "processes": {
+              "Process A": {
+                "3": "A"
+              },
+              "Process B": {
+                "3": "B"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 3,
+                "file": "log.txt",
+                "flags": "O_WRONLY | O_APPEND",
+                "refs": 1
+              },
+              "B": {
+                "offset": 0,
+                "file": "log.txt",
+                "flags": "O_WRONLY | O_APPEND",
+                "refs": 1
+              }
+            },
+            "files": {
+              "log.txt": "log"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-2",
+          "title": "步驟 2",
+          "code": "/* B */ lseek(fd, 0, SEEK_END);",
+          "bodyMarkdown": "B 暫時定位到 3。但 O_APPEND 的 write 會再選當時尾端。",
+          "snapshot": {
+            "processes": {
+              "Process A": {
+                "3": "A"
+              },
+              "Process B": {
+                "3": "B"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 3,
+                "file": "log.txt",
+                "flags": "O_WRONLY | O_APPEND",
+                "refs": 1
+              },
+              "B": {
+                "offset": 3,
+                "file": "log.txt",
+                "flags": "O_WRONLY | O_APPEND",
+                "refs": 1
+              }
+            },
+            "files": {
+              "log.txt": "log"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-3",
+          "title": "步驟 3",
+          "code": "/* B */ write(fd, \"B\", 1);",
+          "bodyMarkdown": "B 的 append write 在 EOF=3 寫入，檔案變 logB。",
+          "snapshot": {
+            "processes": {
+              "Process A": {
+                "3": "A"
+              },
+              "Process B": {
+                "3": "B"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 3,
+                "file": "log.txt",
+                "flags": "O_WRONLY | O_APPEND",
+                "refs": 1
+              },
+              "B": {
+                "offset": 4,
+                "file": "log.txt",
+                "flags": "O_WRONLY | O_APPEND",
+                "refs": 1
+              }
+            },
+            "files": {
+              "log.txt": "logB"
+            },
+            "output": "寫入 B"
+          }
+        },
+        {
+          "id": "step-4",
+          "title": "步驟 4",
+          "code": "/* A */ write(fd, \"A\", 1);",
+          "bodyMarkdown": "A 雖曾停在 3，這次 write 重新以 EOF=4 開始，得到 logBA。",
+          "snapshot": {
+            "processes": {
+              "Process A": {
+                "3": "A"
+              },
+              "Process B": {
+                "3": "B"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 5,
+                "file": "log.txt",
+                "flags": "O_WRONLY | O_APPEND",
+                "refs": 1
+              },
+              "B": {
+                "offset": 4,
+                "file": "log.txt",
+                "flags": "O_WRONLY | O_APPEND",
+                "refs": 1
+              }
+            },
+            "files": {
+              "log.txt": "logBA"
+            },
+            "output": "寫入 A"
+          }
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/append-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "O_RDWR | O_APPEND 開啟後 lseek 到 0，再 write，寫在哪？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "開頭，因為剛剛 seek 到 0"
+        },
+        {
+          "id": "option-1",
+          "text": "該次 write 時的 EOF"
+        },
+        {
+          "id": "option-2",
+          "text": "一律失敗"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "O_APPEND 作用在每次 write 的定位，會使用當時 EOF；read 則仍可由目前位置讀取。"
+    }
+  ]
+}

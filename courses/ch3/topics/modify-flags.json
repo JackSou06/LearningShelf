@@ -1,0 +1,88 @@
+{
+  "id": "modify-flags",
+  "title": "Get → Modify → Set",
+  "lead": "先取得既有 flags，再只改動你需要的位元。",
+  "focus": "只傳 O_APPEND，為何可能意外清掉其他狀態？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/modify-flags.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 69
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.14"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 116
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 55"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        },
+        {
+          "sourceId": "web-modify-flags-0"
+        }
+      ]
+    },
+    {
+      "id": "code",
+      "type": "code",
+      "language": "c",
+      "code": "int val = fcntl(fd, F_GETFL);\nif (val == -1) { /* 處理錯誤 */ }\nelse {\n    val |= O_APPEND;\n    if (fcntl(fd, F_SETFL, val) == -1) {\n        /* 處理錯誤 */\n    }\n}"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/modify-flags-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "要保留其他位元，只清掉 O_APPEND，哪個式子正確？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "val = ~O_APPEND"
+        },
+        {
+          "id": "option-1",
+          "text": "val &= ~O_APPEND"
+        },
+        {
+          "id": "option-2",
+          "text": "val |= ~O_APPEND"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "AND 上反向遮罩，只會把 O_APPEND 對應的位元清為 0。"
+    },
+    {
+      "id": "links",
+      "type": "markdown",
+      "file": "topics/modify-flags-links.md"
+    }
+  ]
+}

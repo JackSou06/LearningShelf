@@ -1,0 +1,78 @@
+{
+  "id": "start",
+  "title": "CH3 File I/O",
+  "lead": "理解 fd、Kernel 開啟狀態、讀寫位置與檔案共享。",
+  "focus": "這一章學習什麼？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/start.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 73
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.1、3.17"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 95
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 0、59、60、61、62、63"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "diagram",
+      "type": "diagram",
+      "layout": "flow",
+      "nodes": [
+        {
+          "kicker": "01 · PER PROCESS",
+          "title": "Descriptor table",
+          "detailMarkdown": "fd → pointer\ndescriptor flags"
+        },
+        {
+          "kicker": "02 · OPEN FILE",
+          "title": "Open-file entry",
+          "detailMarkdown": "current offset\nfile status flags",
+          "dark": true
+        },
+        {
+          "kicker": "03 · FILE OBJECT",
+          "title": "vnode / inode",
+          "detailMarkdown": "file size\nmetadata"
+        }
+      ],
+      "captionMarkdown": "檔案資料可經由 Kernel cache 存取儲存裝置。"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/start-takeaway.md",
+      "role": "takeaway"
+    }
+  ],
+  "estimatedMinutes": 2
+}

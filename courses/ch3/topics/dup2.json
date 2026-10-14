@@ -1,0 +1,252 @@
+{
+  "id": "dup2",
+  "title": "演練 ④ dup2：讓後者指向前者",
+  "lead": "把 newfd 接到 oldfd 的 open-file entry；oldfd 的指向保留。",
+  "focus": "dup2(oldfd, newfd) 到底改哪個 fd？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/dup2.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 52
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 57
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 58
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.12"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 113
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 43、44"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "lab",
+      "type": "steps",
+      "presentation": "program",
+      "initialState": true,
+      "steps": [
+        {
+          "id": "initial",
+          "title": "初始狀態",
+          "bodyMarkdown": "圖中省略未涉及的 fd；∅ 表示 EOF。",
+          "snapshot": {
+            "processes": {
+              "P": {}
+            },
+            "entries": {},
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-1",
+          "title": "步驟 1",
+          "code": "fd1 = open(\"foobar.txt\", O_RDONLY);",
+          "bodyMarkdown": "配置 fd 3，建立 entry A，offset 從 0 開始。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 0,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-2",
+          "title": "步驟 2",
+          "code": "fd2 = open(\"foobar.txt\", O_RDONLY);",
+          "bodyMarkdown": "建立 B，與 A 使用不同 offset。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A",
+                "4": "B"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 0,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              },
+              "B": {
+                "offset": 0,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-3",
+          "title": "步驟 3",
+          "code": "read(fd2, &c, 1);",
+          "bodyMarkdown": "B 讀到 f，offset 變 1；A 仍在 0。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A",
+                "4": "B"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 0,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              },
+              "B": {
+                "offset": 1,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "f"
+          }
+        },
+        {
+          "id": "step-4",
+          "title": "步驟 4",
+          "code": "dup2(fd2, fd1);",
+          "bodyMarkdown": "fd1 改指向 B。A 沒有剩餘參考而釋放；B 的 offset 仍是 1。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "B",
+                "4": "B"
+              }
+            },
+            "entries": {
+              "B": {
+                "offset": 1,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 2
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "f"
+          }
+        },
+        {
+          "id": "step-5",
+          "title": "步驟 5",
+          "code": "read(fd1, &c, 1);",
+          "bodyMarkdown": "現在 fd1 使用 B，讀到 o；B 的 offset 變 2。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "B",
+                "4": "B"
+              }
+            },
+            "entries": {
+              "B": {
+                "offset": 2,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 2
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "o"
+          }
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/dup2-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "dup2(fd2, fd1) 成功後，哪個說法正確？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "fd2 改指向 fd1 原來的 entry"
+        },
+        {
+          "id": "option-1",
+          "text": "fd1 改指向 fd2 的 entry"
+        },
+        {
+          "id": "option-2",
+          "text": "兩個 fd 都回到 offset 0"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "方向是「後面的 fd 指向前面的開啟狀態」；不會重設該 entry 的 offset。"
+    }
+  ]
+}

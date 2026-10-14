@@ -1,0 +1,128 @@
+{
+  "id": "unbuffered",
+  "title": "Unbuffered，到底少了哪一層？",
+  "lead": "它不經由 stdio 自動維護的使用者空間緩衝，但程式的 buffer 與 Kernel cache 仍然存在。",
+  "focus": "read() 沒有 buffer 嗎？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/unbuffered.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 3
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 4
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 8
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 9
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 10
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.1"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 95
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 3、4"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "diagram",
+      "type": "diagram",
+      "layout": "routes",
+      "routes": [
+        {
+          "label": "stdio 路徑",
+          "nodes": [
+            "printf / fread",
+            "stdio buffer",
+            "write / read",
+            "Kernel cache"
+          ]
+        },
+        {
+          "label": "fd 路徑",
+          "nodes": [
+            "User buffer",
+            "write / read",
+            "Kernel cache",
+            "Storage"
+          ]
+        }
+      ],
+      "captionMarkdown": "箭頭是資料可能經過的層次，不表示每次都立即走到儲存裝置。"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/unbuffered-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "以下哪句符合 CH3 的 unbuffered I/O？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "系統內完全沒有緩衝"
+        },
+        {
+          "id": "option-1",
+          "text": "繞過 stdio 自動緩衝，Kernel 仍可能使用 cache"
+        },
+        {
+          "id": "option-2",
+          "text": "每次 read 都必須讀磁碟"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "read/write 直接使用 fd 介面；stdio 緩衝與 Kernel cache 要分開看。"
+    }
+  ]
+}

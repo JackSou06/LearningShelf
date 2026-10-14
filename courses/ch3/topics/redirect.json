@@ -1,0 +1,222 @@
+{
+  "id": "redirect",
+  "title": "演練 ⑤ 讓 stdout 指向檔案",
+  "lead": "改變 fd 1 的連結，後續透過 fd 1 的輸出就會走向新的目的地。",
+  "focus": "為什麼程式仍 write(1)，目的地卻換了？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/redirect.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 59
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 60
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.12"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 113
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 45、46"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "lab",
+      "type": "steps",
+      "presentation": "program",
+      "initialState": true,
+      "steps": [
+        {
+          "id": "initial",
+          "title": "初始狀態",
+          "bodyMarkdown": "圖中省略未涉及的 fd；∅ 表示 EOF。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "1": "T"
+              }
+            },
+            "entries": {
+              "T": {
+                "file": "terminal",
+                "offset": 0,
+                "flags": "O_WRONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "out.txt": ""
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-1",
+          "title": "步驟 1",
+          "code": "fd = open(\"out.txt\", O_WRONLY | O_CREAT | O_TRUNC, 0644);",
+          "bodyMarkdown": "假設回傳 fd 3，建立對應 out.txt 的 A。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "1": "T",
+                "3": "A"
+              }
+            },
+            "entries": {
+              "T": {
+                "file": "terminal",
+                "offset": 0,
+                "flags": "O_WRONLY",
+                "refs": 1
+              },
+              "A": {
+                "offset": 0,
+                "file": "out.txt",
+                "flags": "O_WRONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "out.txt": ""
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-2",
+          "title": "步驟 2",
+          "code": "dup2(fd, STDOUT_FILENO);",
+          "bodyMarkdown": "fd 1 改指向 A，後續經由 stdout 的輸出走向 out.txt。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "1": "A",
+                "3": "A"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 0,
+                "file": "out.txt",
+                "flags": "O_WRONLY",
+                "refs": 2
+              }
+            },
+            "files": {
+              "out.txt": ""
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-3",
+          "title": "步驟 3",
+          "code": "close(fd);",
+          "bodyMarkdown": "關閉 fd 3；fd 1 仍參考 A，所以 A 保留。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "1": "A"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 0,
+                "file": "out.txt",
+                "flags": "O_WRONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "out.txt": ""
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-4",
+          "title": "步驟 4",
+          "code": "write(STDOUT_FILENO, \"Hi\", 2);",
+          "bodyMarkdown": "寫入 out.txt：內容成為 Hi，offset 與 size 都變成 2。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "1": "A"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 2,
+                "file": "out.txt",
+                "flags": "O_WRONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "out.txt": "Hi"
+            },
+            "output": "寫入 Hi"
+          }
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/redirect-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "假設 fd=3，dup2(fd,1) 成功後 close(fd)，stdout？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "因為 fd 被關閉，所以不能輸出"
+        },
+        {
+          "id": "option-1",
+          "text": "仍透過 fd 1 指向檔案"
+        },
+        {
+          "id": "option-2",
+          "text": "恢復指向 terminal"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "fd 1 的參考仍存在，close(3) 不會撤銷 dup2 已建立的連結。",
+      "revisit": "close"
+    }
+  ]
+}

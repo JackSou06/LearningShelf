@@ -1,0 +1,81 @@
+{
+  "id": "close",
+  "title": "close：移除一個 fd 的參考",
+  "lead": "它關閉這個 descriptor，不等於 unlink，也不等於資料已同步到儲存裝置。",
+  "focus": "close(fd) 會刪除檔案嗎？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/close.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 22
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 26
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.5、3.10"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 100
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 16、46"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/close-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "fd 1 和 fd 3 指向同一 entry，成功 close(3) 後？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "fd 1 也跟著關閉"
+        },
+        {
+          "id": "option-1",
+          "text": "fd 1 仍可用，3 可被重用"
+        },
+        {
+          "id": "option-2",
+          "text": "磁碟檔案立刻刪除"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "close 只移除指定 fd 的參考；有其他參考時，共用 entry 仍然存在。"
+    }
+  ]
+}

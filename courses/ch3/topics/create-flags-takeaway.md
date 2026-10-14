@@ -1,0 +1,1 @@
+Create 是建立；truncate 是清空；exclusive create 是已存在就拒絕。

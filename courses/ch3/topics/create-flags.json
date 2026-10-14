@@ -1,0 +1,82 @@
+{
+  "id": "create-flags",
+  "title": "建立、截斷與獨占建立",
+  "lead": "O_CREAT 負責不存在時建立；O_TRUNC 才負責在合適的開啟條件下把普通檔案截斷。",
+  "focus": "O_CREAT 會把既有內容清空嗎？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/create-flags.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 17
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 22
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.3、3.4"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 96
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 13、15"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/create-flags-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "要建立新檔，但絕不覆蓋既有檔，選哪個？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "O_WRONLY | O_CREAT | O_EXCL"
+        },
+        {
+          "id": "option-1",
+          "text": "O_WRONLY | O_CREAT | O_TRUNC"
+        },
+        {
+          "id": "option-2",
+          "text": "O_WRONLY | O_CREAT"
+        }
+      ],
+      "answerId": "option-0",
+      "explanation": "O_CREAT | O_EXCL 把「不存在才建立」交由一次操作完成。",
+      "revisit": "create-race"
+    }
+  ]
+}

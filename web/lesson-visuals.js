@@ -1,0 +1,15 @@
+/* Declarative teaching visuals; course files contain data, never executable HTML. */
+(function(){'use strict';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function bytes(text,offsets={}){const positions=[...text],max=Math.max(positions.length,...Object.values(offsets));while(positions.length<=max)positions.push('');return '<div class="bytes">'+positions.map((x,i)=>{const at=Object.entries(offsets).filter(([,n])=>n===i).map(([k])=>k);return `<span class="byte ${at.length?'at':''}"><small>${i}</small><b>${x?esc(x==='\0'?'·':x):i===[...text].length?'∅':' '}</b>${at.length?`<span class="pointer">↑ ${esc(at.join('/'))}</span>`:''}</span>`;}).join('')+'</div>';}
+function diagram(b,md){let html=b.title?`<div class="section-label">${esc(b.title)}</div>`:'';
+ if(b.layout==='flow')html+='<div class="model-flow">'+b.nodes.map((n,i)=>(i?'<div class="model-arrow">→</div>':'')+`<div class="model-node ${n.dark?'dark':''}"><div class="kicker">${esc(n.kicker)}</div><h3>${esc(n.title)}</h3><small>${md(n.detailMarkdown)}</small></div>`).join('')+'</div>';
+ if(b.layout==='routes')html+=b.routes.map(r=>`<div class="route-row"><span class="route-name">${esc(r.label)}</span>${r.nodes.map((n,i)=>(i?'<span class="muted">→</span>':'')+`<span class="route-chip ${i===1?'green':''}">${esc(n)}</span>`).join('')}</div>`).join('');
+ if(b.layout==='sparse')html+='<div class="hole-track">'+b.segments.map(s=>'<span>'+esc(s.text)+'</span>').join('')+'</div><div class="range-labels">'+b.segments.map(s=>'<span>'+esc(s.range)+'</span>').join('')+'</div>';
+ if(b.metrics)html+='<div class="metrics">'+b.metrics.map(m=>`<div class="metric">${esc(m.label)}<strong>${esc(m.value)}</strong></div>`).join('')+'</div>';
+ if(b.captionMarkdown)html+='<div class="visual-caption">'+md(b.captionMarkdown)+'</div>';return html;
+}
+function snapshot(s){return Object.entries(s.processes).map(([name,fds])=>`<div class="proc"><div class="proc-label">${name==='P'?'Process':esc(name)} · fd table</div><div class="fd-row">${Object.entries(fds).map(([fd,e])=>`<span class="fd-chip">fd ${esc(fd)} → <b>${esc(e)}</b></span>`).join('')||'<span class="empty-state">尚未配置題目使用的 fd</span>'}</div></div>`).join('')+`<div class="entries">${Object.entries(s.entries).map(([id,e])=>`<div class="entry"><b>Entry ${esc(id)}</b><div class="entry-offset">offset <strong>${e.file==='terminal'?'—':esc(e.offset)}</strong></div><small>${esc(e.flags)}</small><small>refs ${esc(e.refs)} · → ${esc(e.file)}</small></div>`).join('')}</div>`+Object.entries(s.files).map(([file,text])=>`<div class="file-box"><div class="file-label">${esc(file)} · size ${text.length}</div>${bytes(text,Object.fromEntries(Object.entries(s.entries).filter(([,e])=>e.file===file).map(([k,e])=>[k,e.offset])))}</div>`).join('')+`<div class="lab-output">最近讀寫：<strong>${esc(s.output)}</strong></div>`;
+}
+globalThis.LessonVisuals={bytes,diagram,snapshot};if(typeof module!=='undefined')module.exports=globalThis.LessonVisuals;
+})();

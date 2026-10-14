@@ -1,0 +1,59 @@
+{
+  "id": "open",
+  "title": "open：取得一次開啟狀態",
+  "lead": "路徑指定目標，flags 指定開啟方式；成功回傳 fd，失敗回傳 -1。",
+  "focus": "open 的參數與回傳值要怎麼讀？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/open.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 17
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.3"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 96
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 11"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "code",
+      "type": "code",
+      "language": "c",
+      "code": "#include <fcntl.h>\n#include <stdio.h>\n#include <unistd.h>\n\nint fd = open(\"notes.txt\", O_RDONLY);\nif (fd == -1) {\n    perror(\"open\");\n    // 進入錯誤處理，不可繼續拿 -1 當有效 fd。\n}"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/open-takeaway.md",
+      "role": "takeaway"
+    }
+  ]
+}

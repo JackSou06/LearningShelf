@@ -1,0 +1,88 @@
+{
+  "id": "positioned-io",
+  "title": "pread / pwrite：指定位置，不移動共用書籤",
+  "lead": "把 offset 當作這次 I/O 的參數，保留 open-file entry 的 current offset。",
+  "focus": "想讀位置 100，卻不干擾另一個 fd，怎麼做？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/positioned-io.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 50
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.11"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 111
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 39"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        },
+        {
+          "sourceId": "web-positioned-io-0"
+        }
+      ]
+    },
+    {
+      "id": "code",
+      "type": "code",
+      "language": "c",
+      "code": "// 假設 current offset = 8\nssize_t n = pread(fd, buf, 2, 0);\n// 成功讀 2 bytes 後，current offset 仍為 8。"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/positioned-io-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "current offset=8，pread(fd,buf,2,0) 成功讀 2 bytes，current offset？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "0"
+        },
+        {
+          "id": "option-1",
+          "text": "2"
+        },
+        {
+          "id": "option-2",
+          "text": "8"
+        }
+      ],
+      "answerId": "option-2",
+      "explanation": "Pread 使用獨立的 offset 參數，不更新 entry 的 current offset。"
+    },
+    {
+      "id": "links",
+      "type": "markdown",
+      "file": "topics/positioned-io-links.md"
+    }
+  ]
+}

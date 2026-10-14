@@ -1,0 +1,1 @@
+Data-only sync 不是完全沒有 metadata；要看資料能否正確讀回。

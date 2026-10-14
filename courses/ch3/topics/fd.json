@@ -1,0 +1,91 @@
+{
+  "id": "fd",
+  "title": "fd 是你這個 process 的索引",
+  "lead": "fd 是非負整數，用來找到目前 process 的 descriptor table entry。",
+  "focus": "fd = 3，代表檔案的永久編號是 3 嗎？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/fd.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 14
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 15
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 16
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.2"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 95
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 6、7"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "diagram",
+      "type": "diagram",
+      "layout": "routes",
+      "routes": [
+        {
+          "label": "Process A",
+          "nodes": [
+            "fd 3",
+            "entry A",
+            "notes.txt"
+          ]
+        },
+        {
+          "label": "Process B",
+          "nodes": [
+            "fd 3",
+            "entry B",
+            "photo.dat"
+          ]
+        }
+      ],
+      "captionMarkdown": "相同 fd 數字，在不同 process 裡可以有不同意義。"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/fd-takeaway.md",
+      "role": "takeaway"
+    }
+  ]
+}

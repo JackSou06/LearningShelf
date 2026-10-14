@@ -1,0 +1,97 @@
+{
+  "id": "delayed-write",
+  "title": "write 回傳後，資料在哪裡？",
+  "lead": "一般 buffered write 可以先更新 Kernel cache，稍後才回寫儲存裝置。",
+  "focus": "成功寫入等於斷電後仍一定存在嗎？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/delayed-write.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 39
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 61
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.8、3.13"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 106
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 33"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "diagram",
+      "type": "diagram",
+      "layout": "routes",
+      "routes": [
+        {
+          "label": "資料路徑",
+          "nodes": [
+            "User buffer",
+            "Kernel cache",
+            "Storage"
+          ]
+        }
+      ],
+      "captionMarkdown": "一般 write 返回時可能停在 Kernel cache；fsync 等介面提出進一步的同步要求。"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/delayed-write-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "write 成功後立刻 read 到新資料，能證明什麼？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "已經永久寫入實體裝置"
+        },
+        {
+          "id": "option-1",
+          "text": "讀取目前能看見新內容"
+        },
+        {
+          "id": "option-2",
+          "text": "不需要任何同步操作"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "Read 可能從 cache 取得內容，這與持久化條件不同。"
+    }
+  ]
+}

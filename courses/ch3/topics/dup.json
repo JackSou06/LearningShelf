@@ -1,0 +1,201 @@
+{
+  "id": "dup",
+  "title": "演練 ② dup：兩個 fd，一個位置",
+  "lead": "dup 建立新的 descriptor，指向同一個 open-file entry。",
+  "focus": "複製 fd，會複製一份 offset 嗎？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/dup.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 52
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.12"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 113
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 41、42"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "lab",
+      "type": "steps",
+      "presentation": "program",
+      "initialState": true,
+      "steps": [
+        {
+          "id": "initial",
+          "title": "初始狀態",
+          "bodyMarkdown": "圖中省略未涉及的 fd；∅ 表示 EOF。",
+          "snapshot": {
+            "processes": {
+              "P": {}
+            },
+            "entries": {},
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-1",
+          "title": "步驟 1",
+          "code": "fd1 = open(\"foobar.txt\", O_RDONLY);",
+          "bodyMarkdown": "配置 fd 3，建立 entry A，offset 從 0 開始。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 0,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-2",
+          "title": "步驟 2",
+          "code": "fd2 = dup(fd1);",
+          "bodyMarkdown": "配置 fd 4，連到既有的 A。A 現在被兩個 fd 參考。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A",
+                "4": "A"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 0,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 2
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-3",
+          "title": "步驟 3",
+          "code": "read(fd1, &c, 1);",
+          "bodyMarkdown": "由 fd1 指向的 A 讀取 f；A 的 offset 前進到 1。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A",
+                "4": "A"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 1,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 2
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "f"
+          }
+        },
+        {
+          "id": "step-4",
+          "title": "步驟 4",
+          "code": "read(fd2, &c, 1);",
+          "bodyMarkdown": "fd2 同樣使用 A。從 offset 1 讀到 o，A 前進到 2。",
+          "snapshot": {
+            "processes": {
+              "P": {
+                "3": "A",
+                "4": "A"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 2,
+                "file": "foobar.txt",
+                "flags": "O_RDONLY",
+                "refs": 2
+              }
+            },
+            "files": {
+              "foobar.txt": "foobar"
+            },
+            "output": "o"
+          }
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/dup-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "open 後 dup，先由 fd1 讀一 byte，再由 fd2 讀一 byte，第二次得到？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "f"
+        },
+        {
+          "id": "option-1",
+          "text": "o"
+        },
+        {
+          "id": "option-2",
+          "text": "仍是 EOF"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "兩個 fd 共用 A；第一個 read 把 A 的 offset 變 1，第二個便讀 o。",
+      "revisit": "two-opens"
+    }
+  ]
+}

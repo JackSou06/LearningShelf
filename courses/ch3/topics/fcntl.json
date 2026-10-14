@@ -1,0 +1,93 @@
+{
+  "id": "fcntl",
+  "title": "fcntl：先選對要操作的那一層",
+  "lead": "F_GETFD / F_SETFD 操作 descriptor flags；F_GETFL / F_SETFL 操作 open-file 的 status flags。",
+  "focus": "FD 和 FL 兩组指令，差在哪裡？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/fcntl.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 66
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 67
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 68
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.14"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 116
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 51、52、53"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "table",
+      "type": "table",
+      "columns": [
+        "指令",
+        "位置",
+        "典型用途"
+      ],
+      "rows": [
+        [
+          "F_GETFD / F_SETFD",
+          "Descriptor entry",
+          "FD_CLOEXEC"
+        ],
+        [
+          "F_GETFL / F_SETFL",
+          "Open-file entry",
+          "O_APPEND、O_NONBLOCK"
+        ],
+        [
+          "F_DUPFD",
+          "新 fd 指向既有 entry",
+          "指定新 fd 的最小下限"
+        ]
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/fcntl-takeaway.md",
+      "role": "takeaway"
+    }
+  ]
+}

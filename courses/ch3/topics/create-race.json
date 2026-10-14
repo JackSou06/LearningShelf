@@ -1,0 +1,80 @@
+{
+  "id": "create-race",
+  "title": "O_EXCL：把條件放進建立操作",
+  "lead": "兩次呼叫之間，另一個 process 可能已經建立並寫入了檔案。",
+  "focus": "先檢查不存在，再 creat，哪裡可能出錯？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/create-race.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 51
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.11"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 111
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 40"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "code",
+      "type": "code",
+      "language": "c",
+      "code": "int fd = open(\"new.log\", O_WRONLY | O_CREAT | O_EXCL, 0600);\n// fd == -1 時檢查 errno；EEXIST 代表目標已存在。"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/create-race-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "要避免「檢查不存在」和「建立」之間的 race，核心做法？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "把兩次呼叫寫在相鄰兩行"
+        },
+        {
+          "id": "option-1",
+          "text": "以 O_CREAT | O_EXCL 交給單次操作"
+        },
+        {
+          "id": "option-2",
+          "text": "先 sleep 讓其他程式做完"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "相鄰程式碼仍可能被排程切開；條件應整合進受保證的操作。"
+    }
+  ]
+}

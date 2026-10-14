@@ -1,0 +1,81 @@
+{
+  "id": "mode-space",
+  "title": "Mode 是權限，Space 是記憶體",
+  "lead": "一個描述 CPU 執行權限；另一個描述虛擬位址空間的區域。",
+  "focus": "User mode 和 user space 是同一件事嗎？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/mode-space.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 11
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 12
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.1（課堂先備補充）"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 95
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 2"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "table",
+      "type": "table",
+      "columns": [
+        "比較",
+        "Mode",
+        "Space"
+      ],
+      "rows": [
+        [
+          "問的是",
+          "用什麼權限執行？",
+          "位址屬於哪個區域？"
+        ],
+        [
+          "例子",
+          "read 的 Kernel 處理流程",
+          "char buf[100] 所在的 user memory"
+        ]
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/mode-space-takeaway.md",
+      "role": "takeaway"
+    }
+  ]
+}

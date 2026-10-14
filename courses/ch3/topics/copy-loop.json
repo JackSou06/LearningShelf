@@ -1,0 +1,66 @@
+{
+  "id": "copy-loop",
+  "title": "把 read 與 write 接成可靠迴圈",
+  "lead": "外層取得下一批資料，內層把這批資料剩下的部分寫完。",
+  "focus": "複製程式為什麼需要內外兩層迴圈？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/copy-loop.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 41
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 42
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.7–3.9"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 105
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 24、25、27、28、30"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "code",
+      "type": "code",
+      "language": "c",
+      "code": "#include <unistd.h>\n#include <errno.h>\n\nint copy_fd(int in, int out) {\n    char buf[4096];\n    for (;;) {\n        ssize_t n = read(in, buf, sizeof buf);\n        if (n == 0) return 0;\n        if (n < 0) {\n            if (errno == EINTR) continue;\n            return -1;\n        }\n        ssize_t done = 0;\n        while (done < n) {\n            ssize_t w = write(out, buf + done, (size_t)(n - done));\n            if (w < 0) {\n                if (errno == EINTR) continue;\n                return -1;\n            }\n            if (w == 0) { errno = EIO; return -1; }\n            done += w;\n        }\n    }\n}"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/copy-loop-takeaway.md",
+      "role": "takeaway"
+    }
+  ]
+}

@@ -1,0 +1,397 @@
+{
+  "schemaVersion": "1.0",
+  "courseId": "sp-ch3-file-io",
+  "contentVersion": "1.0.1",
+  "title": "系統程式設計 · CH3 File I/O",
+  "language": "zh-Hant",
+  "audience": "系統程式設計課程學生",
+  "objectives": [
+    "理解 fd、open-file entry 與檔案物件",
+    "追蹤讀寫位置、共享與重新導向"
+  ],
+  "modules": [
+    {
+      "id": "module-1",
+      "title": "看見 I/O 全貌",
+      "topics": [
+        "start",
+        "syscall",
+        "mode-space",
+        "unbuffered",
+        "cache"
+      ]
+    },
+    {
+      "id": "module-2",
+      "title": "認識 fd 與三層結構",
+      "topics": [
+        "fd",
+        "lowest-fd",
+        "three-tables",
+        "offset-size",
+        "model-check"
+      ]
+    },
+    {
+      "id": "module-3",
+      "title": "開啟、建立與關閉",
+      "topics": [
+        "open",
+        "access",
+        "create-flags",
+        "permissions",
+        "close",
+        "openat"
+      ]
+    },
+    {
+      "id": "module-4",
+      "title": "讀寫與檔案位置",
+      "topics": [
+        "lseek",
+        "seekable",
+        "hole",
+        "read",
+        "short-read",
+        "write",
+        "copy-loop",
+        "io-check"
+      ]
+    },
+    {
+      "id": "module-5",
+      "title": "共享與重新導向",
+      "topics": [
+        "two-opens",
+        "dup",
+        "fork",
+        "compare-sharing",
+        "dup2",
+        "redirect",
+        "shell",
+        "stdio-flush",
+        "sharing-check"
+      ]
+    },
+    {
+      "id": "module-6",
+      "title": "競爭與原子操作",
+      "topics": [
+        "race",
+        "append",
+        "positioned-io",
+        "create-race",
+        "atomic-check"
+      ]
+    },
+    {
+      "id": "module-7",
+      "title": "效率與資料同步",
+      "topics": [
+        "efficiency",
+        "readahead-time",
+        "delayed-write",
+        "sync",
+        "sync-flags",
+        "blocking"
+      ]
+    },
+    {
+      "id": "module-8",
+      "title": "Flags 與整章整合",
+      "topics": [
+        "fcntl",
+        "flags-scope",
+        "modify-flags",
+        "cloexec",
+        "ioctl-devfd",
+        "api-map",
+        "final-review"
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "id": "start",
+      "file": "topics/start.json"
+    },
+    {
+      "id": "syscall",
+      "file": "topics/syscall.json"
+    },
+    {
+      "id": "mode-space",
+      "file": "topics/mode-space.json"
+    },
+    {
+      "id": "unbuffered",
+      "file": "topics/unbuffered.json"
+    },
+    {
+      "id": "cache",
+      "file": "topics/cache.json"
+    },
+    {
+      "id": "fd",
+      "file": "topics/fd.json"
+    },
+    {
+      "id": "lowest-fd",
+      "file": "topics/lowest-fd.json"
+    },
+    {
+      "id": "three-tables",
+      "file": "topics/three-tables.json"
+    },
+    {
+      "id": "offset-size",
+      "file": "topics/offset-size.json"
+    },
+    {
+      "id": "model-check",
+      "file": "topics/model-check.json"
+    },
+    {
+      "id": "open",
+      "file": "topics/open.json"
+    },
+    {
+      "id": "access",
+      "file": "topics/access.json"
+    },
+    {
+      "id": "create-flags",
+      "file": "topics/create-flags.json"
+    },
+    {
+      "id": "permissions",
+      "file": "topics/permissions.json"
+    },
+    {
+      "id": "close",
+      "file": "topics/close.json"
+    },
+    {
+      "id": "openat",
+      "file": "topics/openat.json"
+    },
+    {
+      "id": "lseek",
+      "file": "topics/lseek.json"
+    },
+    {
+      "id": "seekable",
+      "file": "topics/seekable.json"
+    },
+    {
+      "id": "hole",
+      "file": "topics/hole.json"
+    },
+    {
+      "id": "read",
+      "file": "topics/read.json"
+    },
+    {
+      "id": "short-read",
+      "file": "topics/short-read.json"
+    },
+    {
+      "id": "write",
+      "file": "topics/write.json"
+    },
+    {
+      "id": "copy-loop",
+      "file": "topics/copy-loop.json"
+    },
+    {
+      "id": "io-check",
+      "file": "topics/io-check.json"
+    },
+    {
+      "id": "two-opens",
+      "file": "topics/two-opens.json"
+    },
+    {
+      "id": "dup",
+      "file": "topics/dup.json"
+    },
+    {
+      "id": "fork",
+      "file": "topics/fork.json"
+    },
+    {
+      "id": "compare-sharing",
+      "file": "topics/compare-sharing.json"
+    },
+    {
+      "id": "dup2",
+      "file": "topics/dup2.json"
+    },
+    {
+      "id": "redirect",
+      "file": "topics/redirect.json"
+    },
+    {
+      "id": "shell",
+      "file": "topics/shell.json"
+    },
+    {
+      "id": "stdio-flush",
+      "file": "topics/stdio-flush.json"
+    },
+    {
+      "id": "sharing-check",
+      "file": "topics/sharing-check.json"
+    },
+    {
+      "id": "race",
+      "file": "topics/race.json"
+    },
+    {
+      "id": "append",
+      "file": "topics/append.json"
+    },
+    {
+      "id": "positioned-io",
+      "file": "topics/positioned-io.json"
+    },
+    {
+      "id": "create-race",
+      "file": "topics/create-race.json"
+    },
+    {
+      "id": "atomic-check",
+      "file": "topics/atomic-check.json"
+    },
+    {
+      "id": "efficiency",
+      "file": "topics/efficiency.json"
+    },
+    {
+      "id": "readahead-time",
+      "file": "topics/readahead-time.json"
+    },
+    {
+      "id": "delayed-write",
+      "file": "topics/delayed-write.json"
+    },
+    {
+      "id": "sync",
+      "file": "topics/sync.json"
+    },
+    {
+      "id": "sync-flags",
+      "file": "topics/sync-flags.json"
+    },
+    {
+      "id": "blocking",
+      "file": "topics/blocking.json"
+    },
+    {
+      "id": "fcntl",
+      "file": "topics/fcntl.json"
+    },
+    {
+      "id": "flags-scope",
+      "file": "topics/flags-scope.json"
+    },
+    {
+      "id": "modify-flags",
+      "file": "topics/modify-flags.json"
+    },
+    {
+      "id": "cloexec",
+      "file": "topics/cloexec.json"
+    },
+    {
+      "id": "ioctl-devfd",
+      "file": "topics/ioctl-devfd.json"
+    },
+    {
+      "id": "api-map",
+      "file": "topics/api-map.json"
+    },
+    {
+      "id": "final-review",
+      "file": "topics/final-review.json"
+    }
+  ],
+  "sources": [
+    {
+      "id": "slides",
+      "title": "課堂投影片",
+      "kind": "pdf",
+      "file": "sources/sp_ch3_2026.pdf"
+    },
+    {
+      "id": "apue",
+      "title": "APUE 第三版",
+      "kind": "pdf",
+      "file": "sources/Advanced.Programming.in.the.UNIX.Environment.3rd.Edition_textbook.pdf"
+    },
+    {
+      "id": "original",
+      "title": "原 AI 教學",
+      "kind": "text",
+      "file": "sources/CH3_File_IO_教學.md"
+    },
+    {
+      "id": "transcript",
+      "title": "課堂字幕",
+      "kind": "text",
+      "file": "sources/CH3_I_O_lecture.txt"
+    },
+    {
+      "id": "example",
+      "title": "C 實作範例",
+      "kind": "text",
+      "file": "sources/trace_io.c"
+    },
+    {
+      "id": "web-seekable-0",
+      "title": "Linux lseek 手冊",
+      "kind": "web",
+      "url": "https://man7.org/linux/man-pages/man2/lseek.2.html"
+    },
+    {
+      "id": "web-positioned-io-0",
+      "title": "Linux pread / pwrite 手冊",
+      "kind": "web",
+      "url": "https://man7.org/linux/man-pages/man2/pread.2.html"
+    },
+    {
+      "id": "web-sync-0",
+      "title": "Linux sync 手冊",
+      "kind": "web",
+      "url": "https://man7.org/linux/man-pages/man2/sync.2.html"
+    },
+    {
+      "id": "web-sync-flags-0",
+      "title": "Linux F_SETFL 手冊",
+      "kind": "web",
+      "url": "https://man7.org/linux/man-pages/man2/F_SETFL.2const.html"
+    },
+    {
+      "id": "web-modify-flags-0",
+      "title": "Linux F_SETFL 手冊",
+      "kind": "web",
+      "url": "https://man7.org/linux/man-pages/man2/F_SETFL.2const.html"
+    }
+  ],
+  "scopes": [
+    {
+      "id": "core",
+      "title": "本次課程"
+    },
+    {
+      "id": "next",
+      "title": "後續內容"
+    }
+  ],
+  "archiveFiles": [
+    {
+      "title": "原 AI 教學全文",
+      "file": "topics/original-teaching.md"
+    }
+  ]
+}

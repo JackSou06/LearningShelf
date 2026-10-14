@@ -1,0 +1,89 @@
+{
+  "id": "seekable",
+  "title": "不是所有 fd 都有可移動的位置",
+  "lead": "fd 是統一介面，但底下的物件能力不一定相同。",
+  "focus": "Pipe 能像普通檔案一樣 lseek 嗎？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/seekable.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 32
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 34
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.6"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 100
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 22"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        },
+        {
+          "sourceId": "web-seekable-0"
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/seekable-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "對 pipe 呼叫 lseek 失敗，這裡應辨識的 errno？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "EPIPE"
+        },
+        {
+          "id": "option-1",
+          "text": "ESPIPE"
+        },
+        {
+          "id": "option-2",
+          "text": "EOF"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "ESPIPE 表示此物件不支援 seek；EOF 也不是 errno。"
+    },
+    {
+      "id": "links",
+      "type": "markdown",
+      "file": "topics/seekable-links.md"
+    }
+  ]
+}

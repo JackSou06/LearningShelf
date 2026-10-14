@@ -1,0 +1,115 @@
+{
+  "id": "stdio-flush",
+  "title": "printf 為什麼沒有立刻顯示？",
+  "lead": "內容可能還留在 stdio 的 user-space buffer。",
+  "focus": "printf 的內容一定已經交給 fd 1 了嗎？",
+  "scope": "core",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/stdio-flush.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 9
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 10
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 59
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.1；stdio 詳見 5.4、5.5"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 95
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 3、48"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "diagram",
+      "type": "diagram",
+      "layout": "routes",
+      "routes": [
+        {
+          "label": "stdio 路徑",
+          "nodes": [
+            "printf / fread",
+            "stdio buffer",
+            "write / read",
+            "Kernel cache"
+          ]
+        },
+        {
+          "label": "fd 路徑",
+          "nodes": [
+            "User buffer",
+            "write / read",
+            "Kernel cache",
+            "Storage"
+          ]
+        }
+      ],
+      "captionMarkdown": "箭頭是資料可能經過的層次，不表示每次都立即走到儲存裝置。"
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/stdio-flush-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "fflush(stdout) 成功，能直接推論什麼？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "資料一定已永久寫入實體裝置"
+        },
+        {
+          "id": "option-1",
+          "text": "stdio 緩衝輸出已交給底層寫入"
+        },
+        {
+          "id": "option-2",
+          "text": "current offset 被重設為 0"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "Fflush 處理 user-space 的 stdio 緩衝，持久化要看底層同步語意。",
+      "revisit": "unbuffered"
+    }
+  ]
+}

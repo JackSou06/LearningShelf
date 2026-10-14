@@ -1,0 +1,266 @@
+{
+  "id": "race",
+  "title": "Race：兩個正確步驟，中間有空隙",
+  "lead": "另一個 process 可能在你的 seek 與 write 之間完成它自己的寫入。",
+  "focus": "lseek 到 EOF 再 write，為什麼仍可能覆蓋資料？",
+  "scope": "next",
+  "blocks": [
+    {
+      "id": "body",
+      "type": "markdown",
+      "file": "topics/race.md",
+      "references": [
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 47
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 48
+          }
+        },
+        {
+          "sourceId": "slides",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 49
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "section",
+            "value": "3.11"
+          }
+        },
+        {
+          "sourceId": "apue",
+          "locator": {
+            "kind": "pdfPage",
+            "value": 111
+          }
+        },
+        {
+          "sourceId": "original",
+          "locator": {
+            "kind": "section",
+            "value": "§ 37"
+          }
+        },
+        {
+          "sourceId": "transcript"
+        }
+      ]
+    },
+    {
+      "id": "lab",
+      "type": "steps",
+      "presentation": "program",
+      "initialState": true,
+      "steps": [
+        {
+          "id": "initial",
+          "title": "初始狀態",
+          "bodyMarkdown": "A、B 各自開啟同一個 log，各有自己的 entry。",
+          "snapshot": {
+            "processes": {
+              "Process A": {
+                "3": "A"
+              },
+              "Process B": {
+                "3": "B"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 0,
+                "file": "log.txt",
+                "flags": "O_WRONLY",
+                "refs": 1
+              },
+              "B": {
+                "offset": 0,
+                "file": "log.txt",
+                "flags": "O_WRONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "log.txt": "log"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-1",
+          "title": "步驟 1",
+          "code": "/* A */ lseek(fd, 0, SEEK_END);",
+          "bodyMarkdown": "A 把自己的 offset 設成目前 EOF：3。",
+          "snapshot": {
+            "processes": {
+              "Process A": {
+                "3": "A"
+              },
+              "Process B": {
+                "3": "B"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 3,
+                "file": "log.txt",
+                "flags": "O_WRONLY",
+                "refs": 1
+              },
+              "B": {
+                "offset": 0,
+                "file": "log.txt",
+                "flags": "O_WRONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "log.txt": "log"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-2",
+          "title": "步驟 2",
+          "code": "/* B */ lseek(fd, 0, SEEK_END);",
+          "bodyMarkdown": "B 也看到 EOF=3，所以 B 的 offset 也是 3。",
+          "snapshot": {
+            "processes": {
+              "Process A": {
+                "3": "A"
+              },
+              "Process B": {
+                "3": "B"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 3,
+                "file": "log.txt",
+                "flags": "O_WRONLY",
+                "refs": 1
+              },
+              "B": {
+                "offset": 3,
+                "file": "log.txt",
+                "flags": "O_WRONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "log.txt": "log"
+            },
+            "output": "尚未讀寫"
+          }
+        },
+        {
+          "id": "step-3",
+          "title": "步驟 3",
+          "code": "/* B */ write(fd, \"B\", 1);",
+          "bodyMarkdown": "B 在位置 3 寫入，檔案變 logB、size=4；A 的 offset 仍是 3。",
+          "snapshot": {
+            "processes": {
+              "Process A": {
+                "3": "A"
+              },
+              "Process B": {
+                "3": "B"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 3,
+                "file": "log.txt",
+                "flags": "O_WRONLY",
+                "refs": 1
+              },
+              "B": {
+                "offset": 4,
+                "file": "log.txt",
+                "flags": "O_WRONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "log.txt": "logB"
+            },
+            "output": "寫入 B"
+          }
+        },
+        {
+          "id": "step-4",
+          "title": "步驟 4",
+          "code": "/* A */ write(fd, \"A\", 1);",
+          "bodyMarkdown": "A 用舊位置 3 寫入，覆蓋 B，最後變成 logA。",
+          "snapshot": {
+            "processes": {
+              "Process A": {
+                "3": "A"
+              },
+              "Process B": {
+                "3": "B"
+              }
+            },
+            "entries": {
+              "A": {
+                "offset": 4,
+                "file": "log.txt",
+                "flags": "O_WRONLY",
+                "refs": 1
+              },
+              "B": {
+                "offset": 4,
+                "file": "log.txt",
+                "flags": "O_WRONLY",
+                "refs": 1
+              }
+            },
+            "files": {
+              "log.txt": "logA"
+            },
+            "output": "寫入 A"
+          }
+        }
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "markdown",
+      "file": "topics/race-takeaway.md",
+      "role": "takeaway"
+    },
+    {
+      "id": "quiz-0",
+      "type": "singleChoice",
+      "question": "A seek 後，B 把檔案寫長，A 的獨立 offset 會？",
+      "options": [
+        {
+          "id": "option-0",
+          "text": "自動跟著 EOF 變大"
+        },
+        {
+          "id": "option-1",
+          "text": "保留 seek 當時的位置"
+        },
+        {
+          "id": "option-2",
+          "text": "自動加鎖"
+        }
+      ],
+      "answerId": "option-1",
+      "explanation": "普通的 lseek 只是把當下算出的數字存進 A 的 entry，沒有綁定未來 EOF。",
+      "revisit": "offset-size"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+共享 offset 不代表共享 descriptor flags。
