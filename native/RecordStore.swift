@@ -13,6 +13,13 @@ final class RecordStore {
     }
     deinit { sqlite3_close(db) }
     func checkpoint() throws { try execute("PRAGMA wal_checkpoint(FULL);") }
+    func delete(_ courseID: String) throws {
+        var statement: OpaquePointer?
+        guard sqlite3_prepare_v2(db, "DELETE FROM records WHERE id=?", -1, &statement, nil) == SQLITE_OK else { throw CourseFailure(message: "無法刪除學習紀錄") }
+        defer { sqlite3_finalize(statement) }
+        sqlite3_bind_text(statement, 1, courseID, -1, unsafeBitCast(-1, to: sqlite3_destructor_type.self))
+        guard sqlite3_step(statement) == SQLITE_DONE else { throw CourseFailure(message: "無法刪除學習紀錄") }
+    }
     private func execute(_ sql: String) throws { guard sqlite3_exec(db, sql, nil, nil, nil) == SQLITE_OK else { throw CourseFailure(message: "資料庫寫入失敗") } }
     func load(_ id: String) throws -> [String: Any]? {
         var stmt: OpaquePointer?

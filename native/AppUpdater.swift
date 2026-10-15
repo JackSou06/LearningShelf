@@ -44,6 +44,13 @@ import Sparkle
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         guard let store else { return .terminateNow }
         guard !preparing else { return .terminateLater }
+        if store.isImporting {
+            let alert = NSAlert()
+            alert.messageText = "正在處理課程"
+            alert.informativeText = "請等待匯入或刪除完成後，再結束 App 或安裝更新。"
+            alert.runModal()
+            return .terminateCancel
+        }
         if store.session.hasActiveRequests {
             let alert = NSAlert()
             alert.messageText = "AI 回答尚未完成"

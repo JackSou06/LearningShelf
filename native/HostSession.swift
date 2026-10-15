@@ -12,6 +12,17 @@ import JavaScriptCore
     private var openedCourses: [String: LoadedCourse] = [:]
     private var isQuitting = false
     var hasActiveRequests: Bool { !jobs.isEmpty }
+    private var allowedCourseTokens: [String: Set<UUID>] = [:]
+    func activateCourse(_ course: LoadedCourse) {
+        if allowedCourseTokens[course.id] != nil { allowedCourseTokens[course.id]?.insert(course.token) }
+    }
+    func hasActiveRequests(for courseID: String) -> Bool { jobs.values.contains { $0.courseId == courseID } }
+    func forgetCourse(_ courseID: String) {
+        mdJobs.removeValue(forKey: courseID)?.cancel()
+        openedCourses.removeValue(forKey: courseID)
+        initialized.remove(courseID)
+        allowedCourseTokens[courseID] = []
+    }
     private var jobs: [String: (courseId: String, cancel: () -> Void)] = [:]
     private var mdJobs: [String: DispatchWorkItem] = [:]
     var temporaryKey = ""
@@ -36,6 +47,7 @@ import JavaScriptCore
         return r
     }
     func load(_ course: LoadedCourse) throws -> [String: Any] {
+        if let allowed = allowedCourseTokens[course.id], !allowed.contains(course.token) { throw CourseFailure(message: "課程已更新或刪除，請重新開啟課程") }
         openedCourses[course.id] = course
         let raw = try records.load(course.id)
         let first = initialized.insert(course.id).inserted

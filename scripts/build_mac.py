@@ -47,6 +47,7 @@ def build(output=None, test_config=None):
             subprocess.run(['xcrun', 'swiftc', '-swift-version', '5', '-parse-as-library', '-O',
                             '-target', f'{arch}-apple-macos13.0', '-module-cache-path', str(ROOT / '.swift-cache'),
                             *map(str, sorted((ROOT / 'native').glob('*.swift'))),
+                            '-I', str(ROOT / 'native/CArchive'), '-larchive',
                             '-F', str(sparkle), '-framework', 'Sparkle',
                             '-Xlinker', '-rpath', '-Xlinker', '@executable_path/../Frameworks',
                             '-framework', 'SwiftUI', '-framework', 'WebKit', '-framework', 'JavaScriptCore',

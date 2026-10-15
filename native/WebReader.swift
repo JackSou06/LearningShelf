@@ -20,11 +20,15 @@ struct WebReader: NSViewRepresentable {
         store.readerResumers[token] = { [weak view] in
             _ = try? await view?.callAsyncJavaScript("window.LearningApp?.resumeAfterCancelledQuit();", arguments: [:], in: nil, contentWorld: .page)
         }
+        store.readerCourseFlushers[token] = { [weak view] in
+            guard let view else { return }
+            _ = try await view.callAsyncJavaScript("return await window.LearningApp.prepareToQuit(true);", arguments: [:], in: nil, contentWorld: .page)
+        }
         view.load(URLRequest(url: URL(string: "learning://app/index.html")!))
         return view
     }
     func updateNSView(_ view: WKWebView, context: Context) {}
-    static func dismantleNSView(_ view: WKWebView, coordinator: Coordinator) { coordinator.store.readerFlushers.removeValue(forKey:coordinator.token); coordinator.store.readerResumers.removeValue(forKey:coordinator.token); view.configuration.userContentController.removeScriptMessageHandler(forName: "learning"); /* Host requests continue when a reader is closed. */ }
+    static func dismantleNSView(_ view: WKWebView, coordinator: Coordinator) { coordinator.store.readerFlushers.removeValue(forKey:coordinator.token); coordinator.store.readerResumers.removeValue(forKey:coordinator.token); coordinator.store.readerCourseFlushers.removeValue(forKey:coordinator.token); view.configuration.userContentController.removeScriptMessageHandler(forName: "learning"); /* Host requests continue when a reader is closed. */ }
     final class Coordinator: NSObject, WKScriptMessageHandler, WKURLSchemeHandler, WKNavigationDelegate, WKUIDelegate {
         let store: AppStore
         let token = UUID()

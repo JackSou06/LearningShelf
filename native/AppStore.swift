@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import UniformTypeIdentifiers
 
 struct CatalogEntry: Codable, Identifiable {
     var id: String
@@ -10,24 +11,31 @@ struct CatalogEntry: Codable, Identifiable {
     var topics: Int
     var lastOpened: Date
     var bundledFolder: String? = nil
+    var managedFolder: String? = nil
 }
+
 @MainActor final class AppStore: ObservableObject {
     @Published var entries: [CatalogEntry] = []
-    @Published var selected: LoadedCourse? { didSet { if oldValue?.token != selected?.token { server?.stop(); server=nil; shareURL="" } } }
+    @Published var selected: LoadedCourse? { didSet { if oldValue?.token != selected?.token { server?.stop(); server = nil; shareURL = "" } } }
     @Published var error = ""
     @Published var shareURL = ""
     @Published var search = ""
     @Published private(set) var isPreparingToQuit = false
+    @Published private(set) var isImporting = false
+    @Published private(set) var importProgress = ""
     var readerFlushers: [UUID: () async throws -> Void] = [:]
     var readerResumers: [UUID: () async -> Void] = [:]
+    var readerCourseFlushers: [UUID: () async throws -> Void] = [:]
     let resources: URL
     let loader: CourseLoader
+    let library: CourseLibrary
     let session: HostSession
     let records: RecordStore
     private let catalogURL: URL
     private var loaded: [String: LoadedCourse] = [:]
     private var server: ShareServer?
-    init(resources resourceOverride: URL? = nil, dataDirectory: URL? = nil) {
+
+    init(resources resourceOverride: URL? = nil, dataDirectory: URL? = nil, transport: HostSession.Transport? = nil) {
         resources = resourceOverride ?? Bundle.main.resourceURL!
         let testData = Bundle.main.bundleIdentifier?.hasSuffix(".update-test") == true ? (Bundle.main.object(forInfoDictionaryKey: "LearningShelfTestDataDirectory") as? String).map { URL(fileURLWithPath: $0) } : nil
         let data = dataDirectory ?? testData ?? ProcessInfo.processInfo.environment["LEARNING_APP_DATA_DIR"].map { URL(fileURLWithPath: $0) } ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("LearningShelf")
@@ -35,83 +43,228 @@ struct CatalogEntry: Codable, Identifiable {
         do {
             loader = try CourseLoader(webRoot: resources.appendingPathComponent("Web"))
             records = try RecordStore(folder: data)
-            session = try HostSession(webRoot: resources.appendingPathComponent("Web"), records: records)
+            library = try CourseLibrary(dataDirectory: data)
+            session = try HostSession(webRoot: resources.appendingPathComponent("Web"), records: records, transport: transport)
         } catch { fatalError("App 初始化失敗：\(error.localizedDescription)") }
         if let raw = try? Data(contentsOf: catalogURL), let list = try? JSONDecoder().decode([CatalogEntry].self, from: raw) { entries = list }
         else {
             for name in ["ch3", "linear-algebra"] {
-                do { let c = try loader.load(resources.appendingPathComponent("Courses/" + name)); register(c) } catch { self.error = error.localizedDescription }
+                do { try register(loader.load(resources.appendingPathComponent("Courses/" + name))) }
+                catch { self.error = error.localizedDescription }
             }
         }
     }
     var filtered: [CatalogEntry] { entries.filter { search.isEmpty || $0.title.localizedCaseInsensitiveContains(search) }.sorted { $0.lastOpened > $1.lastOpened } }
-    private func saveCatalog() {
-        do { try JSONEncoder().encode(entries).write(to: catalogURL, options: .atomic) }
-        catch { self.error = "課程列表未能保存：" + error.localizedDescription }
+    private func saveCatalog(_ list: [CatalogEntry]) throws { try JSONEncoder().encode(list).write(to: catalogURL, options: .atomic) }
+    private func cachedURL(_ entry: CatalogEntry) throws -> URL {
+        guard CourseLibrary.validID(entry.id) else { throw CourseFailure(message: "課程 ID 無效") }
+        if let folder = entry.managedFolder { return try library.snapshot(folder, courseID: entry.id) }
+        return records.folder.appendingPathComponent("course-" + entry.id + ".json")
     }
-    private func cachedURL(_ id: String) -> URL { records.folder.appendingPathComponent("course-" + id + ".json") }
-    func register(_ c: LoadedCourse) {
-        let bookmark = try? c.root.bookmarkData(options: [.withSecurityScope, .securityScopeAllowOnlyReadAccess], includingResourceValuesForKeys: nil, relativeTo: nil)
-        let builtIn = c.root.deletingLastPathComponent().standardizedFileURL == resources.appendingPathComponent("Courses").standardizedFileURL ? c.root.lastPathComponent : nil
-        let e = CatalogEntry(id: c.id, title: c.title, path: c.root.path, bookmark: bookmark, version: c.version, topics: c.topicCount, lastOpened: Date(), bundledFolder: builtIn)
-        if let i = entries.firstIndex(where: { $0.id == c.id }) { entries[i] = e } else { entries.append(e) }
-        loaded[c.id] = c
-        do { try JSONSerialization.data(withJSONObject: ["pack": c.pack, "model": c.model]).write(to: cachedURL(c.id), options: .atomic) } catch { self.error = "教材快照未保存：" + error.localizedDescription }
-        saveCatalog()
+    func register(_ course: LoadedCourse, managedFolder: String? = nil) throws {
+        let bookmark = managedFolder == nil ? try? course.root.bookmarkData(options: [.withSecurityScope, .securityScopeAllowOnlyReadAccess], includingResourceValuesForKeys: nil, relativeTo: nil) : nil
+        let builtIn = course.root.deletingLastPathComponent().standardizedFileURL == resources.appendingPathComponent("Courses").standardizedFileURL ? course.root.lastPathComponent : nil
+        let entry = CatalogEntry(id: course.id, title: course.title, path: course.root.path, bookmark: bookmark, version: course.version, topics: course.topicCount, lastOpened: Date(), bundledFolder: builtIn, managedFolder: managedFolder)
+        var next = entries
+        if let index = next.firstIndex(where: { $0.id == course.id }) { next[index] = entry } else { next.append(entry) }
+        let snapshot = try cachedURL(entry)
+        let previous = try? Data(contentsOf: snapshot)
+        try JSONSerialization.data(withJSONObject: ["pack": course.pack, "model": course.model]).write(to: snapshot, options: .atomic)
+        do { try saveCatalog(next) }
+        catch {
+            if let previous { try? previous.write(to: snapshot, options: .atomic) }
+            else { try? FileManager.default.removeItem(at: snapshot) }
+            throw error
+        }
+        entries = next
+        loaded[course.id] = course
+    }
+    private func bundledFolder(_ entry: CatalogEntry) -> String? {
+        if let folder = entry.bundledFolder { return folder }
+        let parts = URL(fileURLWithPath: entry.path).pathComponents
+        let legacy = parts.count >= 5 && parts[parts.count-5].hasSuffix(".app") && Array(parts.suffix(4).prefix(3)) == ["Contents", "Resources", "Courses"]
+        return legacy ? parts.last : nil
     }
     func root(_ entry: CatalogEntry) -> URL {
-        // Older catalogs stored an absolute path into the app that registered them.
-        let parts = URL(fileURLWithPath: entry.path).pathComponents
-        let oldBundlePath = parts.count >= 5 && parts[parts.count-5].hasSuffix(".app") && Array(parts.suffix(4).prefix(3)) == ["Contents", "Resources", "Courses"]
-        if let folder = entry.bundledFolder ?? (oldBundlePath ? parts.last : nil), CourseLoader.safePath(folder), !folder.contains("/") {
+        if let folder = entry.managedFolder { return (try? library.content(folder, courseID: entry.id)) ?? library.directory.appendingPathComponent(".invalid") }
+        if let folder = bundledFolder(entry), CourseLoader.safePath(folder), !folder.contains("/") {
             let candidate = resources.appendingPathComponent("Courses/" + folder)
             if let data = try? Data(contentsOf: candidate.appendingPathComponent("course.json")), let manifest = try? JSONSerialization.jsonObject(with: data) as? [String: Any], manifest["courseId"] as? String == entry.id { return candidate }
         }
-        if let b = entry.bookmark { var stale = false; if let u = try? URL(resolvingBookmarkData: b, options: [.withSecurityScope], relativeTo: nil, bookmarkDataIsStale: &stale) { return u } }
+        if let bookmark = entry.bookmark {
+            var stale = false
+            if let url = try? URL(resolvingBookmarkData: bookmark, options: [.withSecurityScope], relativeTo: nil, bookmarkDataIsStale: &stale) { return url }
+        }
         return URL(fileURLWithPath: entry.path)
     }
     func open(_ entry: CatalogEntry) {
+        guard !isImporting else { return }
+        // Existing external links are collected into the managed library when next opened.
+        if entry.managedFolder == nil && bundledFolder(entry) == nil && FileManager.default.fileExists(atPath: root(entry).path) {
+            let changed = (try? loader.load(root(entry)).version) != entry.version
+            Task { await importItems([root(entry)], confirmReplacement: changed) }
+            return
+        }
         do {
-            let c = try loader.load(root(entry))
-            if c.version != entry.version { let alert = NSAlert(); alert.messageText = "教材已有新版本"; alert.informativeText = "\(entry.version) → \(c.version)\n\(entry.topics) → \(c.topicCount) 個主題。筆記與 Q&A 保留，舊版題目會提示重新作答。"; alert.addButton(withTitle: "更新並開啟"); alert.addButton(withTitle: "使用已保存版本"); if alert.runModal() != .alertFirstButtonReturn { openSnapshot(entry); return } }
-            register(c); selected = c
-        } catch { self.error = "原資料夾無法讀取，嘗試已保存版本。\n" + error.localizedDescription; openSnapshot(entry) }
+            let course = try loader.load(root(entry))
+            if course.version != entry.version {
+                let alert = NSAlert()
+                alert.messageText = "教材已有新版本"
+                alert.informativeText = "\(entry.version) → \(course.version)\n\(entry.topics) → \(course.topicCount) 個主題。筆記與 Q&A 保留，舊版題目會提示重新作答。"
+                alert.addButton(withTitle: "更新並開啟"); alert.addButton(withTitle: "使用已保存版本")
+                if alert.runModal() != .alertFirstButtonReturn { openSnapshot(entry); return }
+            }
+            try register(course, managedFolder: entry.managedFolder)
+            session.activateCourse(course)
+            selected = course
+        } catch { self.error = "課程無法讀取，嘗試已保存版本。\n" + error.localizedDescription; openSnapshot(entry) }
     }
     func openSnapshot(_ entry: CatalogEntry) {
-        if let c = loaded[entry.id] { selected = c; return }
-        if let data = try? Data(contentsOf: cachedURL(entry.id)), let d = try? JSONSerialization.jsonObject(with: data) as? [String: Any], let pack = d["pack"] as? [String: Any], let model = d["model"] as? [String: Any] { selected = LoadedCourse(root: root(entry), pack: pack, model: model) }
+        if let course = loaded[entry.id] { session.activateCourse(course); selected = course; return }
+        if let url = try? cachedURL(entry), let data = try? Data(contentsOf: url), let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any], let pack = object["pack"] as? [String: Any], let model = object["model"] as? [String: Any] {
+            let course = LoadedCourse(root: root(entry), pack: pack, model: model)
+            session.activateCourse(course); selected = course
+        }
     }
     func chooseFolder() {
-        let panel = NSOpenPanel(); panel.canChooseFiles = false; panel.canChooseDirectories = true; panel.allowsMultipleSelection = false; panel.message = "選擇課程資料夾（內含 course.json）"
-        if panel.runModal() == .OK, let url = panel.url { importFolder(url) }
+        guard !isImporting else { return }
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true; panel.canChooseDirectories = true; panel.allowsMultipleSelection = true
+        panel.allowedContentTypes = [.zip, .folder]
+        panel.message = "匯入課程 ZIP 或課程資料夾；驗證後會由 App 保存教材。"
+        panel.prompt = "匯入課程"
+        if panel.runModal() == .OK { Task { await importItems(panel.urls) } }
     }
-    func importFolder(_ url: URL) {
-        do {
-            if FileManager.default.fileExists(atPath: url.appendingPathComponent("course.json").path) {
-                let c = try loader.load(url)
-                if let old = entries.first(where: { $0.id == c.id }), old.path != c.root.path { let a = NSAlert();a.messageText="此課程已在列表中";a.informativeText="將以此資料夾取代原位置，保留學習紀錄。";a.addButton(withTitle:"使用此資料夾");a.addButton(withTitle:"取消");if a.runModal() != .alertFirstButtonReturn{return} }
-                register(c); selected = c
-            } else {
-                let access = url.startAccessingSecurityScopedResource(); defer { if access { url.stopAccessingSecurityScopedResource() } }
-                let children = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil).filter { FileManager.default.fileExists(atPath: $0.appendingPathComponent("course.json").path) }
-                if children.isEmpty { throw CourseFailure(message: "此資料夾尚無課程格式。點「製作課程」取得協議，連同教材交給外部 AI 產生課程。") }
-                var failures: [String] = []
-                for child in children { do { register(try loader.load(child)) } catch { failures.append(child.lastPathComponent + "：" + error.localizedDescription) } }
-                if !failures.isEmpty { error = failures.joined(separator: "\n") }
+    func importFolder(_ url: URL) { Task { await importItems([url]) } }
+    func importItems(_ urls: [URL], confirmReplacement: Bool = true) async {
+        guard !isImporting, !isPreparingToQuit else { return }
+        isImporting = true
+        defer { isImporting = false; importProgress = "" }
+        var last: LoadedCourse?, failures: [String] = []
+        var inputs: [URL] = []
+        for url in urls {
+            let access = url.startAccessingSecurityScopedResource()
+            if (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true && !FileManager.default.fileExists(atPath: url.appendingPathComponent("course.json").path),
+               let children = try? FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: [.isDirectoryKey]),
+               children.contains(where: { FileManager.default.fileExists(atPath: $0.appendingPathComponent("course.json").path) }) {
+                inputs += children.filter { FileManager.default.fileExists(atPath: $0.appendingPathComponent("course.json").path) }.sorted { $0.lastPathComponent < $1.lastPathComponent }
+            } else { inputs.append(url) }
+            if access { url.stopAccessingSecurityScopedResource() }
+        }
+        for url in inputs {
+            importProgress = "正在驗證並匯入：" + url.lastPathComponent
+            do {
+                let library = library
+                let prepared = try await Task.detached(priority: .userInitiated) { try library.prepare(url) }.value
+                defer { prepared.discard() }
+                if let course = try await installPrepared(prepared, confirmReplacement: confirmReplacement) { last = course }
+            } catch { failures.append(url.lastPathComponent + "：" + error.localizedDescription) }
+        }
+        if let last { selected = last }
+        if !failures.isEmpty { error = failures.joined(separator: "\n\n") }
+    }
+    /// Tests can confirm replacement explicitly without opening a modal window.
+    func installPrepared(_ prepared: PreparedCoursePackage, confirmReplacement: Bool) async throws -> LoadedCourse? {
+        let preview = try loader.load(prepared.courseRoot)
+        let old = entries.first { $0.id == preview.id }
+        if let old {
+            let order = CourseLibrary.compareVersions(preview.version, old.version)
+            guard order != .orderedAscending else { throw CourseFailure(message: "匯入版本 \(preview.version) 舊於課程庫的 \(old.version)，未取代教材") }
+            if confirmReplacement {
+                let alert = NSAlert()
+                alert.messageText = order == .orderedSame ? "重新匯入「\(preview.title)」？" : "更新「\(preview.title)」？"
+                alert.informativeText = "版本 \(old.version) → \(preview.version)\n\(old.topics) → \(preview.topicCount) 個主題。\n筆記、Q&A、草稿、進度與作答紀錄保留；已變更的題目可能需要重新作答。\n目前的平板分享會在切換課程時停止。"
+                alert.addButton(withTitle: "更新並保留紀錄"); alert.addButton(withTitle: "取消")
+                if alert.runModal() != .alertFirstButtonReturn { return nil }
             }
-        } catch { self.error = error.localizedDescription }
+        }
+        guard !session.hasActiveRequests(for: preview.id) else { throw CourseFailure(message: "此課程的 AI 回答尚未完成，請等待或取消後再更新") }
+        let shouldFlush = selected != nil
+        if shouldFlush {
+            do { for flush in Array(readerCourseFlushers.values) { try await flush() } }
+            catch { await resumeReaders(); throw error }
+        }
+        do {
+            guard !session.hasActiveRequests(for: preview.id) else { throw CourseFailure(message: "此課程的 AI 回答尚未完成，未取代教材") }
+            var installed: LoadedCourse?
+            try library.install(prepared, courseID: preview.id) { folder, root in
+                let course = try loader.load(root)
+                guard course.id == preview.id, course.version == preview.version else { throw CourseFailure(message: "課程內容在驗證後改變，未匯入") }
+                try register(course, managedFolder: folder)
+                installed = course
+            }
+            session.forgetCourse(preview.id)
+            if let installed { session.activateCourse(installed) }
+            if let previous = old?.managedFolder { try? library.discard(previous, courseID: preview.id) }
+            if old?.managedFolder == nil { try? FileManager.default.removeItem(at: records.folder.appendingPathComponent("course-" + preview.id + ".json")) }
+            if shouldFlush { selected = nil }
+            return installed
+        } catch { if shouldFlush { await resumeReaders() }; throw error }
     }
-    func remove(_ e: CatalogEntry) { entries.removeAll { $0.id == e.id }; saveCatalog() }
-    func reveal(_ e: CatalogEntry) { NSWorkspace.shared.activateFileViewerSelecting([root(e)]) }
+    private func resumeReaders() async { for resume in Array(readerResumers.values) { await resume() } }
+    func requestDelete(_ entry: CatalogEntry) {
+        guard !isImporting else { return }
+        let alert = NSAlert()
+        alert.messageText = "刪除「\(entry.title)」？"
+        let removal = entry.managedFolder == nil ? "課程會從課程庫移除。" : "課程會從課程庫移除，App 收存的教材會刪除。"
+        alert.informativeText = removal + "\n預設保留學習紀錄，重新匯入相同課程可接續學習。原始 ZIP、外部資料夾與另存的檔案不受影響。"
+        let checkbox = NSButton(checkboxWithTitle: "一併刪除筆記、Q&A、草稿、進度與作答紀錄", target: nil, action: nil)
+        alert.accessoryView = checkbox
+        alert.addButton(withTitle: "刪除課程").hasDestructiveAction = true
+        alert.addButton(withTitle: "取消")
+        if alert.runModal() == .alertFirstButtonReturn {
+            Task { do { try await deleteCourse(entry, includingRecords: checkbox.state == .on) } catch { self.error = error.localizedDescription } }
+        }
+    }
+    func deleteCourse(_ entry: CatalogEntry, includingRecords: Bool) async throws {
+        guard !isImporting, !isPreparingToQuit, CourseLibrary.validID(entry.id) else { throw CourseFailure(message: "目前無法刪除課程") }
+        guard entries.contains(where: { $0.id == entry.id }) else { return }
+        guard !session.hasActiveRequests(for: entry.id) else { throw CourseFailure(message: "此課程的 AI 回答尚未完成，請等待或取消後再刪除") }
+        isImporting = true; importProgress = "正在刪除課程…"
+        defer { isImporting = false; importProgress = "" }
+        do {
+            if selected?.id == entry.id { for flush in Array(readerCourseFlushers.values) { try await flush() } }
+            guard !session.hasActiveRequests(for: entry.id) else { throw CourseFailure(message: "此課程的 AI 回答尚未完成，未刪除課程") }
+            let next = entries.filter { $0.id != entry.id }
+            try saveCatalog(next)
+            do { if includingRecords { try records.delete(entry.id) } }
+            catch { try saveCatalog(entries); throw error }
+            if selected?.id == entry.id { selected = nil }
+            session.forgetCourse(entry.id)
+            loaded.removeValue(forKey: entry.id)
+            entries = next
+            if let folder = entry.managedFolder { try library.discard(folder, courseID: entry.id) }
+            try? FileManager.default.removeItem(at: records.folder.appendingPathComponent("course-" + entry.id + ".json"))
+            if includingRecords {
+                try? FileManager.default.removeItem(at: records.folder.appendingPathComponent("Markdown/" + entry.id + "-learning.md"))
+                UserDefaults.standard.removeObject(forKey: "markdown-target:" + entry.id)
+            }
+        } catch { await resumeReaders(); throw error }
+    }
+    func remove(_ entry: CatalogEntry) { requestDelete(entry) }
+    func reveal(_ entry: CatalogEntry) { NSWorkspace.shared.activateFileViewerSelecting([root(entry)]) }
     func authoring() { NSWorkspace.shared.open(resources.appendingPathComponent("Protocol/AUTHORING.md")) }
-    func readStats(_ e: CatalogEntry) -> String { guard let r = try? records.load(e.id) else { return "尚未開始" }; let seen = (r["seen"] as? [String])?.count ?? 0; let qa = (r["qa"] as? [Any])?.count ?? 0; return "已讀 \(seen) / \(e.topics) · Q&A \(qa)" }
+    func readStats(_ entry: CatalogEntry) -> String {
+        guard let record = try? records.load(entry.id) else { return "尚未開始" }
+        let seen = (record["seen"] as? [String])?.count ?? 0, qa = (record["qa"] as? [Any])?.count ?? 0
+        return "已讀 \(seen) / \(entry.topics) · Q&A \(qa)"
+    }
     func toggleShare() {
         if let server { server.stop(); self.server = nil; shareURL = ""; return }
         guard let selected else { return }
-        do { let s = try ShareServer(webRoot: resources.appendingPathComponent("Web"), course: selected, session: session); server = s; s.start { [weak self] result in Task { @MainActor in switch result { case .success(let url): self?.shareURL = url; case .failure(let e): self?.error = e.localizedDescription; self?.server = nil } } } }
-        catch { self.error = error.localizedDescription }
+        do {
+            let instance = try ShareServer(webRoot: resources.appendingPathComponent("Web"), course: selected, session: session)
+            server = instance
+            instance.start { [weak self] result in Task { @MainActor in
+                switch result {
+                case .success(let url): self?.shareURL = url
+                case .failure(let error): self?.error = error.localizedDescription; self?.server = nil
+                }
+            } }
+        } catch { self.error = error.localizedDescription }
     }
     func prepareToQuit() async throws {
+        guard !isImporting else { throw CourseFailure(message: "正在匯入或刪除課程，請完成後再結束 App") }
         isPreparingToQuit = true
         for flush in Array(readerFlushers.values) { try await flush() }
         try session.prepareToQuit()
@@ -119,7 +272,7 @@ struct CatalogEntry: Codable, Identifiable {
     }
     func resumeAfterCancelledQuit() async {
         session.resumeAfterCancelledQuit()
-        for resume in Array(readerResumers.values) { await resume() }
+        await resumeReaders()
         isPreparingToQuit = false
     }
 }

@@ -6,15 +6,15 @@ macOS 課程庫 App，搭配可獨立使用的瀏覽器閱讀器。課程由 JSO
 
 - macOS：`dist/LearningShelf.app`，macOS 13 以上；安裝包為 Apple Silicon／Intel 通用版本（本機編譯，尚未公證）。
 - 瀏覽器：`dist/LearningShelf.html`，雙擊可離線閱讀；AI Q&A 需網路與使用者 API key。
-- App 主頁 →「開啟資料夾」，選含 `course.json` 的資料夾。也可拖入資料夾，或選擇含多門課程的父資料夾。
-- 主頁 →「製作課程」，將開啟的 `AUTHORING.md` 與教材交給外部 AI。
+- App 主頁 →「匯入課程」，選課程 ZIP 或含 `course.json` 的資料夾；也可拖到 App。驗證成功後教材收進統一課程庫，原始 ZIP／資料夾可移動或刪除。
+- 主頁 →「製作課程」，將開啟的 `AUTHORING.md` 與教材交給外部 AI，請 AI 交付一門課程的 ZIP。
 - 內建完整 CH3（51 主題／42 題／七組演練）與線性代數範例（2 主題）。CH3 原始來源放在該課程 sources 中。
 
 ## 學習
 
 目錄可收起，支援鍵盤左右鍵、觸控滑動與橫向觸控板翻頁。筆記與 Q&A 依主題保存；Q 預設收合，點擊查看 A。每筆問題旁的垃圾桶圖示可直接刪除，刪除後立即從 AI 上下文移除，不提供復原。刪除標記會保存，匯入舊備份不會自動把它加回。圖片、表格、長程式及演練可獨立捲動。已讀與答題分開處理。
 
-Mac 紀錄以 SQLite 存在 `~/Library/Application Support/LearningShelf/`，課程列表與上次有效教材快照也保存在此。教材資料夾不會被筆記修改。資料夾移動時，可重新定位，原課程 ID 對應的紀錄仍保留。課程更新先驗證；版號改變時提示使用新版本或保存版本。
+Mac 紀錄以 SQLite 存在 `~/Library/Application Support/LearningShelf/`，課程列表、教材副本與有效快照也保存在此。新匯入教材由 App 保存，筆記不會修改原始教材；同課程 ID 的新 ZIP 會提示更新並保留紀錄，拒絕較舊版本。0.1.8 以前登記的外部資料夾會在下次開啟時收存；原資料夾若已遺失，仍可用快照閱讀並重新匯入。
 
 瀏覽器的個人紀錄存在目前來源的 localStorage；換瀏覽器、裝置或分享網址前先匯出 JSON。透過資料夾選擇器臨時加入的瀏覽器課程，需要下次重新選擇；內建與分享課程直接可開啟。獨立瀏覽器檔案的紀錄與 App 分開；從 Mac 分享網址開啟的平板則使用下述電腦同步模式。
 
@@ -71,7 +71,7 @@ macOS 圖示使用 `resources/learningShelf_icon_macos.png`：外圍透明、圓
 ```sh
 xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache native/CourseLoader.swift native/RecordStore.swift native/MarkdownArchiveStore.swift tests/native_checks.swift -framework JavaScriptCore -framework PDFKit -lsqlite3 -o /tmp/learning-native-checks
 /tmp/learning-native-checks "$PWD"
-xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache native/CourseLoader.swift native/RecordStore.swift native/MarkdownArchiveStore.swift native/KeyStore.swift native/HostSession.swift native/ShareServer.swift tests/share_checks.swift -framework JavaScriptCore -framework Network -framework Security -lsqlite3 -o /tmp/learning-share-checks
+xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache native/CourseLoader.swift native/RecordStore.swift native/MarkdownArchiveStore.swift native/KeyStore.swift native/HostSession.swift native/ShareServer.swift tests/share_checks.swift -framework JavaScriptCore -framework Network -framework Security -framework PDFKit -lsqlite3 -o /tmp/learning-share-checks
 /tmp/learning-share-checks "$PWD"
 ```
 
@@ -181,8 +181,31 @@ python3 scripts/release_mac.py --publish
 `tests/update_checks.swift` 使用獨立資料夾核對內建課程搬移、外部課程位置、SQLite／草稿重開、MD flush、保存失敗恢復與 AI 進行中保護。可用以下方式執行：
 
 ```sh
-xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache native/AppStore.swift native/CourseLoader.swift native/RecordStore.swift native/MarkdownArchiveStore.swift native/KeyStore.swift native/HostSession.swift native/ShareServer.swift tests/update_checks.swift -framework SwiftUI -framework JavaScriptCore -framework Network -framework Security -framework PDFKit -lsqlite3 -o /tmp/learning-update-checks
+xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache native/AppStore.swift native/CourseLibrary.swift native/CourseLoader.swift native/RecordStore.swift native/MarkdownArchiveStore.swift native/KeyStore.swift native/HostSession.swift native/ShareServer.swift tests/update_checks.swift -I native/CArchive -larchive -framework SwiftUI -framework JavaScriptCore -framework Network -framework Security -framework PDFKit -lsqlite3 -o /tmp/learning-update-checks
 /tmp/learning-update-checks "$PWD"
 ```
 
 實際安裝驗證使用 `build_mac.py --test-config 測試設定.json --output dist/測試資料夾`；設定需提供 `version`、`build`、`feedURL` 與絕對路徑 `testDataDirectory`。此模式使用獨立 Bundle ID 與資料目錄，只放寬本機測試網路，發布腳本會拒絕上傳測試版。
+
+
+## 0.1.9：課程 ZIP、統一課程庫、教材更新與刪除
+
+課程 ZIP 可拖到主頁或閱讀畫面，也可按「匯入課程」選擇 ZIP／資料夾，一次加入多份。每個 ZIP 只含一門課，`course.json` 位於根目錄或唯一一個最上層資料夾內；支援中文 UTF-8 檔名。Finder 自帶的 `__MACOSX`／`.DS_Store`／AppleDouble metadata 會忽略。
+
+App 使用 macOS 系統 libarchive 串流讀取 ZIP，不依賴使用者安裝 Python 或解壓工具。先解壓至暫存位置、驗證全部教材，再將完整內容保存到 `~/Library/Application Support/LearningShelf/Courses/`。解壓限制為 200 MB／10,000 個項目；課程 JSON／Markdown／圖片原有 20 MB 限制仍適用。加密、連結、路徑穿越、重複檔名、損壞內容與不完整 ZIP 會拒絕匯入。
+
+同一 `courseId` 對應同一門課。再次匯入會顯示版本、主題數與保留紀錄說明；使用者取消時不改動教材。較舊版號不能覆蓋新版；同版號重新匯入也須確認。作者需保留穩定 ID 並提高 `contentVersion`。更新採完整驗證後的新教材副本，課程清單成功寫入後才清理舊教材；儲存失敗時舊版保持可用。
+
+筆記、Q&A、草稿、進度、複習標記、已作答答案與刪除標記依課程 ID 保留；題目版本改變時閱讀器仍會提示重新作答。更新／刪除會先保存開啟中的紀錄；該課程的 AI 回答進行中時會要求先等待或取消。切換課程後原平板分享停止，需要重新分享。舊閱讀畫面的延遲請求不能重新寫回已更新／刪除的課程。
+
+每門課旁的垃圾桶與右鍵選單均可刪除課程。預設只刪 App 收存的教材與課程列表，保留學習紀錄；重新匯入同一 ID 可以接續。勾選「一併刪除」會同時刪除此課程在 App 的紀錄及自動 MD，並解除 MD 綁定。原始 ZIP、外部來源資料夾與使用者另存／匯出的檔案不刪除。內建課程從列表刪除後不會在重新開 App 時自動出現；App 內建資源不直接修改，以維持程式簽章。
+
+核心回歸檢查使用隔離資料，不接觸個人學習紀錄：
+
+0.1.9 已通過課程庫、更新保存、分享同步與 JavaScript 回歸檢查，以及 Apple Silicon／Intel 通用版本建置。另以獨立資料目錄實際操作 ZIP 選取匯入、版本確認、重新匯入後筆記與草稿保留，並檢查刪除確認視窗。刪除／清除紀錄與重新匯入由原生測試驗證；Finder 拖曳尚未完成介面實測。
+
+```sh
+python3 tests/create_course_packages.py /tmp/learningshelf-course-fixtures
+xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache -I native/CArchive native/AppStore.swift native/CourseLibrary.swift native/CourseLoader.swift native/RecordStore.swift native/MarkdownArchiveStore.swift native/KeyStore.swift native/HostSession.swift native/ShareServer.swift tests/course_library_checks.swift -framework SwiftUI -framework JavaScriptCore -framework Network -framework Security -framework PDFKit -lsqlite3 -larchive -o /tmp/learning-course-library-checks
+/tmp/learning-course-library-checks "$PWD" /tmp/learningshelf-course-fixtures
+```
