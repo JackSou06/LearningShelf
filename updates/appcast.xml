@@ -6,16 +6,16 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
     <link>https://github.com/JackSou06/LearningShelf</link>
     <language>zh-TW</language>
     <item>
-      <title>LearningShelf 0.1.8</title>
-      <pubDate>Thu, 15 Oct 2026 00:09:44 GMT</pubDate>
-      <description>&lt;p&gt;新增 App 更新功能：主頁與「學習工具」選單可按「檢查更新」。&lt;br&gt;&lt;br&gt;新版會顯示版本與更新說明，由使用者選擇下載、安裝並重新啟動。&lt;br&gt;更新清單與安裝包皆經簽章驗證；不自動檢查、下載或安裝。&lt;br&gt;&lt;br&gt;重新啟動前先保存筆記、問答草稿與 MD；AI 回答進行中或保存失敗時會暫停安裝。&lt;br&gt;安裝會中斷平板分享，重開 App 後請重新分享並使用新的網址。&lt;br&gt;筆記、進度、Q&amp;amp;A、API 設定及外部課程保留；內建課程可在 App 移動或更新後重新定位。&lt;br&gt;&lt;br&gt;此版本未經 Apple 公證，首次安裝可能需至 macOS「系統設定 → 隱私權與安全性」允許開啟。&lt;br&gt;請先將 LearningShelf.app 放到「應用程式」資料夾，再開啟及使用更新功能。&lt;br&gt;&lt;/p&gt;</description>
-      <sparkle:version>11</sparkle:version>
-      <sparkle:shortVersionString>0.1.8</sparkle:shortVersionString>
+      <title>LearningShelf 0.1.9</title>
+      <pubDate>Thu, 15 Oct 2026 19:03:50 GMT</pubDate>
+      <description>&lt;p&gt;新增課程 ZIP 匯入與統一課程庫。&lt;br&gt;&lt;br&gt;將 AI 交付的課程 ZIP 拖到 App，或按「匯入課程」選擇 ZIP／資料夾。驗證成功後由 App 保存完整教材，之後移動或刪除原始壓縮包不影響閱讀。&lt;br&gt;&lt;br&gt;匯入相同課程 ID 可更新教材；更新前顯示版本與主題數，保留筆記、Q&amp;amp;A、草稿、進度與作答紀錄。較舊版本不會覆蓋新版，驗證或儲存失敗會保留舊教材。&lt;br&gt;&lt;br&gt;課程旁新增垃圾桶：預設刪除教材並保留學習紀錄，也可選擇一併刪除紀錄。刪除後重新匯入相同課程 ID 可接續保留的紀錄。原始 ZIP、外部資料夾與另存檔案不受影響。&lt;br&gt;&lt;br&gt;課程製作協議已更新為交付單一課程 ZIP。匯入拒絕路徑穿越、連結、損壞、重複檔名、加密與超大壓縮包。&lt;br&gt;&lt;br&gt;更新或刪除該課程前，請等待 AI 回答完成或先取消。切換課程將停止原平板分享，請重新分享。&lt;br&gt;&lt;/p&gt;</description>
+      <sparkle:version>12</sparkle:version>
+      <sparkle:shortVersionString>0.1.9</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
-      <enclosure url="https://github.com/JackSou06/LearningShelf/releases/download/v0.1.8/LearningShelf-0.1.8.zip" length="39434935" type="application/octet-stream" sparkle:edSignature="zGii9nvwTqFH0YRrC19qKQJKTD5VDLno5/YKAsY8G2uyUg03/VU2wbn/vGIFIYGEnXsbx0XFQvgTW4ilwBDWCA=="></enclosure>
+      <enclosure url="https://github.com/JackSou06/LearningShelf/releases/download/v0.1.9/LearningShelf-0.1.9.zip" length="39564545" type="application/octet-stream" sparkle:edSignature="V1CiCP0+RT973K2lgUh3m1USiMLO8vCLpxAvUX5MDZZ9r6TgX6yeZ7Rqc6Ykg83lcstRYy8aHDnb6FfTQX2hCQ=="></enclosure>
     </item>
   </channel>
 </rss><!-- sparkle-signatures:
-edSignature: TS2m3xXP24pfZ/n61ZTqcs+Pgy05JPipGSOJCgX74ACrxIYic+sfKyEnuYYGLP4Hu9d85tk4VutJOgTkwqDoBg==
-length: 2084
+edSignature: 1rKx1LZIuD065myZE9IO41AeXhZHo2WostHM8t+MEfBoJHbrpJHo3X3D/eM7GiA1Ers8h8rGP3qtLpdwCgbYAw==
+length: 2234
 -->
