@@ -9,6 +9,9 @@ import JavaScriptCore
     private let keyProvider: () -> String?
     private let transport: Transport
     private var initialized = Set<String>()
+    private var openedCourses: [String: LoadedCourse] = [:]
+    private var isQuitting = false
+    var hasActiveRequests: Bool { !jobs.isEmpty }
     private var jobs: [String: (courseId: String, cancel: () -> Void)] = [:]
     private var mdJobs: [String: DispatchWorkItem] = [:]
     var temporaryKey = ""
@@ -33,6 +36,7 @@ import JavaScriptCore
         return r
     }
     func load(_ course: LoadedCourse) throws -> [String: Any] {
+        openedCourses[course.id] = course
         let raw = try records.load(course.id)
         let first = initialized.insert(course.id).inserted
         let r: [String: Any]
@@ -42,6 +46,7 @@ import JavaScriptCore
         return r
     }
     func save(_ incoming: [String: Any], base: [String: Any], course: LoadedCourse) throws -> [String: Any] {
+        guard !isQuitting else { throw CourseFailure(message: "電腦正在重新啟動，請稍後再試") }
         let next = try normalized(incoming, id: course.id), before = try normalized(base, id: course.id)
         let current = try load(course)
         guard var merged = try invoke("RecordSync", "reconcile", [before, next, current]).toDictionary() as? [String: Any] else { throw CourseFailure(message: "紀錄無法同步") }
@@ -69,6 +74,7 @@ import JavaScriptCore
         mdJobs[course.id] = job; DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: job)
     }
     func ask(_ course: LoadedCourse, topicId: String, question: String, requestId: String) throws -> [String: Any] {
+        guard !isQuitting else { throw CourseFailure(message: "電腦正在重新啟動，請稍後再試") }
         guard requestId.range(of: "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", options: .regularExpression) != nil,
               let topic = (course.model["topics"] as? [[String: Any]])?.first(where: { $0["id"] as? String == topicId }),
               !question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, question.count <= 20_000 else { throw CourseFailure(message: "問題或主題格式錯誤") }
@@ -125,6 +131,15 @@ import JavaScriptCore
     private func redact(_ text: String, secret: String) -> String {
         text.replacingOccurrences(of: secret, with: "[金鑰已隱藏]").replacingOccurrences(of: "sk-[A-Za-z0-9_-]+", with: "[金鑰已隱藏]", options: .regularExpression)
     }
+    func prepareToQuit() throws {
+        guard !hasActiveRequests else { throw CourseFailure(message: "AI 回答尚未完成，請等待或取消後再安裝更新") }
+        for job in mdJobs.values { job.cancel() }
+        mdJobs.removeAll()
+        for course in Array(openedCourses.values) { _ = try syncMarkdown(course) }
+        try records.checkpoint()
+        isQuitting = true
+    }
+    func resumeAfterCancelledQuit() { isQuitting = false }
     private static func send(_ request: URLRequest, completion: @escaping (Result<[String: Any], Error>) -> Void) -> (() -> Void) {
         let config = URLSessionConfiguration.ephemeral; config.httpShouldSetCookies = false; config.httpCookieStorage = nil
         let session = URLSession(configuration: config)

@@ -111,5 +111,13 @@ $('#folder-picker').addEventListener('change',async e=>{try{const pack=await P.r
 $('#record-picker').addEventListener('change',async e=>{try{const f=e.target.files[0];if(f){if(f.size>10000000)throw Error('備份超過 10 MB');importRecord(await f.text());}}catch(err){toast(err.message);}e.target.value='';});
 $('#backdrop').addEventListener('click',()=>menu(false));document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)){if(e.target.matches('.qa-input')&&(e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();ask(e.target.value);}return;}if(document.querySelector('dialog[open]')||e.metaKey||e.ctrlKey||e.altKey||!course)return;if(e.key==='ArrowRight'){e.preventDefault();move(1);}if(e.key==='ArrowLeft'){e.preventDefault();move(-1);}if(e.key==='Escape')menu(false);});
 if(P.remote){$('#open-folder').hidden=true;$('#bind-md').hidden=true;$('#record-help').textContent='筆記、Q&A 與作答同步到電腦；平板不另存學習紀錄。';$('#api-open').textContent='電腦 API';}
-window.LearningApp={openPack,home};if(P.native){$('#remember-row').hidden=false;$('#home').hidden=true;P.call('ready').then(info=>{if(info?.remembered){$('#remember-key').checked=true;$('#api-status').textContent='金鑰已記在此 Mac。';}}).catch(e=>toast(e.message));}else if(P.remote){openPack(library[0]).catch(e=>toast(e.message));}else renderHome();
+async function prepareToQuit(){
+ document.body.inert=true;
+ if(busy||hostPending())throw Error('AI 回答尚未完成，請等待或取消後再更新');
+ await persist();await saveChain;
+ if(saveFailed||dirty||saves)throw Error('紀錄尚未同步，已暫停重新啟動');
+ return true;
+}
+function resumeAfterCancelledQuit(){document.body.inert=false;}
+window.LearningApp={openPack,home,prepareToQuit,resumeAfterCancelledQuit};if(P.native){$('#remember-row').hidden=false;$('#home').hidden=true;P.call('ready').then(info=>{if(info?.remembered){$('#remember-key').checked=true;$('#api-status').textContent='金鑰已記在此 Mac。';}}).catch(e=>toast(e.message));}else if(P.remote){openPack(library[0]).catch(e=>toast(e.message));}else renderHome();
 })();

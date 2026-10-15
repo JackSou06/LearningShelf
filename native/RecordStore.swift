@@ -12,6 +12,7 @@ final class RecordStore {
         try execute("CREATE TABLE IF NOT EXISTS records (id TEXT PRIMARY KEY, payload BLOB NOT NULL, previous BLOB, updated REAL);")
     }
     deinit { sqlite3_close(db) }
+    func checkpoint() throws { try execute("PRAGMA wal_checkpoint(FULL);") }
     private func execute(_ sql: String) throws { guard sqlite3_exec(db, sql, nil, nil, nil) == SQLITE_OK else { throw CourseFailure(message: "資料庫寫入失敗") } }
     func load(_ id: String) throws -> [String: Any]? {
         var stmt: OpaquePointer?

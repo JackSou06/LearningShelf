@@ -1,2 +1,3 @@
 *.pdf binary
 *.png binary
+updates/appcast.xml -text

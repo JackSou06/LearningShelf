@@ -81,7 +81,7 @@ xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache 
 
 已驗證 App 關閉重開後筆記與閱讀位置仍可恢復，兩門課程使用同一閱讀器，完整 CH3 轉換與七組演練、格式錯誤與不安全路徑拒絕、主題 AI 上下文隔離、備份合併及舊紀錄遷移、SQLite 關閉重開恢復。原生 App 主頁、課程開啟、外部資料夾選擇、筆記與實際 JSON 檔案匯出均已透過 UI 驗證。瀏覽器版以本機模擬回應驗證 Q&A 收合、用量、紀錄保存、測驗及逐步解說；1024×768 下 51 個 CH3 主題沒有整頁溢出。分享模組以 HTTP 驗證選定課程可讀及私有紀錄路徑拒絕；亦從 App 按分享後，以瀏覽器透過實際區網 IP 開啟課程。
 
-未使用使用者真實 API key 發出驗證請求。實體 iPad 手勢、不同 Wi-Fi 裝置與 Intel Mac 尚需實機驗證。安裝包使用本機 ad-hoc 簽署，尚未 Apple 公證；此版可在開發用 Mac 使用。下一階段再處理對外散發、公證及自動更新。
+未使用使用者真實 API key 發出驗證請求。實體 iPad 手勢、不同 Wi-Fi 裝置與 Intel Mac 尚需實機驗證。安裝包使用本機 ad-hoc 簽署，尚未 Apple 公證；此版可在開發用 Mac 使用。0.1.8 已加入手動檢查更新；尚未 Apple 公證，Intel Mac 與不同 macOS 版本仍需實機核對。
 
 目前保留原有電子書模式，未加入連續捲動模式、自動 OCR、雲端同步、App 內產課或任意程式外掛。課程拆分／合併尚無自動筆記定位映射；舊主題紀錄會保留。原生 PDF 使用 PDFKit，按課程提供的實際 PDF 頁序跳頁。
 
@@ -129,3 +129,60 @@ API 新預設與既有 0.1.1 設定一次性更新為 `gpt-6.1-sol`。每次請�
 ## 0.1.7：逐步解說顯示
 
 簡短逐步解說依所有步驟中最長內容配置固定高度，避免初始說明被強制撐滿整頁。切換只顯示目前步驟，其他步驟不出現在鍵盤操作與輔助閱讀中；長內容在目前步驟內捲動，上／下一步控制保留在區塊底部。完整程式演練仍使用原有頁面高度。教材、ID、筆記與 Q&A 均保留。
+
+
+## 0.1.8：App 更新與發布
+
+主頁及 macOS「學習工具」選單的「檢查更新」會讀取 GitHub 上的簽署清單，顯示版本與更新內容。下載完成後按「Install and Relaunch」安裝並重開。只提供手動檢查與安裝，不在背景定時檢查、下載或更新；Sparkle 的視窗會依其支援的系統語言顯示。
+
+首次請從 [GitHub Releases](https://github.com/JackSou06/LearningShelf/releases/latest) 下載 `LearningShelf-版本.zip`，解壓縮後將 `LearningShelf.app` 放入「應用程式」再開啟。0.1.7 與更舊的版本沒有更新入口，需要手動安裝一次。此發行版使用 ad-hoc 程式簽署，未經 Apple 公證；macOS 首次啟動可能需在「系統設定 → 隱私權與安全性」允許開啟。Sparkle 的 EdDSA 簽章驗證與 Apple 公證為不同用途；不必停用 Gatekeeper。
+
+更新／結束 App 前會等待所有原生閱讀器將筆記、草稿與進度寫入 SQLite，再同步 MD 及 checkpoint。保存失敗會保持 App 開啟；AI 回答進行中會提示等待或先取消，再按安裝。安裝將停止區網分享，平板請先確認「已同步電腦」；重開 App 後重新分享並使用新網址。紀錄資料夾、外部課程與 Keychain 項目不隨 app 替換；macOS 可能再次要求授權存取既有 Keychain 金鑰。
+
+內建課程以相對位置跟隨目前 App；也支援舊版 catalog 中的 app 內絕對路徑。使用者匯入的外部課程仍依原位置開啟。
+
+### 建置與金鑰
+
+`app-version.json` 是版本、遞增 build number、repo、清單網址及公開金鑰的唯一設定來源。正式 App 仍為 Apple Silicon／Intel 通用版本、macOS 13 以上。
+
+```sh
+python3 scripts/build_mac.py
+```
+
+首次建置會從 Sparkle 官方下載固定的 2.10.0 並驗證 SHA-256，快取於忽略追蹤的 `.build-tools/`。App 內嵌框架與授權，執行時不需要 Python、Git 或 Sparkle 開發工具。
+
+更新私鑰保存在發行者 Mac 的 login Keychain，account 為 `LearningShelf-update-signing`；原始碼與 App 僅包含公開金鑰。另一台 Mac 可以建置但無法代替原金鑰簽署更新。第一次初始化新專案時可執行下列命令；本專案已完成，請保留既有金鑰：
+
+```sh
+python3 scripts/sparkle_tools.py
+.build-tools/Sparkle-2.10.0/bin/generate_keys --account LearningShelf-update-signing
+```
+
+切勿把私鑰、Keychain 密碼或 GitHub token 放入 repo。請自行安全備份原更新私鑰；遺失時，此無 Developer ID 的發行方式可能需要使用者手動重新安裝新版才能換金鑰。框架會在解壓前驗證更新包，並驗證更新清單；不得手動修改已簽署 XML。
+
+### 發布新版
+
+1. 修改程式，增加 `app-version.json` 的 `version` 與整數 `build`（兩者均須比上一版大）。
+2. 新增 `updates/版本.md` 更新說明，執行相關檢查，將原始碼 commit。
+3. 在有原更新私鑰的 Mac 執行：
+
+```sh
+python3 scripts/release_mac.py --publish
+```
+
+不加 `--publish` 只準備本機更新包。`--skip-build` 可使用已建好的正式 App；腳本會檢查版本、Bundle ID、更新金鑰與 feed 設定，拒絕測試 App。GitHub 認證沿用 Git credential helper，亦支援此命令的 `GH_TOKEN`／`GITHUB_TOKEN` 環境變數；不把 token 寫入檔案或命令列參數。
+
+腳本依序建置、產生 ZIP、簽署並驗證 ZIP 與清單、推送原始碼、建立 draft Release、上傳並驗證資產雜湊、公開 Release、匿名下載核對內容，最後才 commit/push `updates/appcast.xml`。更新包位於 Releases；清單固定由 `raw.githubusercontent.com` 的 main 分支提供，不需另外設定 GitHub Pages。失敗時不提前發布清單；已公開的版本與資產不自動覆寫，修正後請增加版本重發。GitHub/CDN 快取可能讓剛發布的版本稍晚才出現。
+
+產物位於 `dist/releases/版本/`。本階段由這台 Mac 發布，尚未加入 GitHub Actions。
+
+### 更新驗證
+
+`tests/update_checks.swift` 使用獨立資料夾核對內建課程搬移、外部課程位置、SQLite／草稿重開、MD flush、保存失敗恢復與 AI 進行中保護。可用以下方式執行：
+
+```sh
+xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache native/AppStore.swift native/CourseLoader.swift native/RecordStore.swift native/MarkdownArchiveStore.swift native/KeyStore.swift native/HostSession.swift native/ShareServer.swift tests/update_checks.swift -framework SwiftUI -framework JavaScriptCore -framework Network -framework Security -framework PDFKit -lsqlite3 -o /tmp/learning-update-checks
+/tmp/learning-update-checks "$PWD"
+```
+
+實際安裝驗證使用 `build_mac.py --test-config 測試設定.json --output dist/測試資料夾`；設定需提供 `version`、`build`、`feedURL` 與絕對路徑 `testDataDirectory`。此模式使用獨立 Bundle ID 與資料目錄，只放寬本機測試網路，發布腳本會拒絕上傳測試版。

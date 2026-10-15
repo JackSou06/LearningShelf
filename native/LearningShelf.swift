@@ -3,29 +3,38 @@ import AppKit
 import UniformTypeIdentifiers
 
 @main struct LearningShelf: App {
+    @NSApplicationDelegateAdaptor(LearningAppDelegate.self) private var appDelegate
     @StateObject private var store = AppStore()
+    @StateObject private var updater = AppUpdater()
     var body: some Scene {
         WindowGroup("學習工具") {
             VStack(spacing:0) {
                 if let course=store.selected {
                     if !store.shareURL.isEmpty { VStack(alignment:.leading,spacing:4) { Text("平板筆記與 Q&A 同步至此 Mac；AI 使用此 Mac 的 API 設定。").font(.system(size:12)).foregroundColor(.secondary);HStack {Text(store.shareURL).font(.system(size:12,design:.monospaced)).textSelection(.enabled);Button("複製網址"){NSPasteboard.general.clearContents();NSPasteboard.general.setString(store.shareURL,forType:.string)};Spacer();Button("停止分享"){store.toggleShare()} } }.padding(10).background(Color.gray.opacity(0.07)) }
                     WebReader(store:store,course:course).id(course.token)
-                } else { CourseHome(store:store) }
+                } else { CourseHome(store:store,updater:updater) }
             }
+            .disabled(store.isPreparingToQuit)
+            .onAppear { appDelegate.store = store }
             .frame(minWidth:760,minHeight:580)
             .toolbar {
                 if store.selected != nil {Button(store.shareURL.isEmpty ? "分享到平板":"停止分享"){store.toggleShare()}}
             }
             .alert("課程訊息",isPresented:Binding(get:{!store.error.isEmpty},set:{if !$0{store.error=""}})) {Button("複製修正清單"){NSPasteboard.general.clearContents();NSPasteboard.general.setString(store.error,forType:.string);store.error=""};Button("關閉",role:.cancel){store.error=""}} message: {Text(store.error)}
         }.defaultSize(width:1100,height:820)
-        .commands {CommandGroup(replacing:.newItem){Button("開啟課程資料夾…"){store.chooseFolder()}.keyboardShortcut("o");Button("課程主頁"){store.selected=nil}.keyboardShortcut("h",modifiers:[.command,.shift]);Button("製作課程協議"){store.authoring()}}}
+        .commands {
+            CommandGroup(after:.appInfo) { Button("檢查更新…") { updater.checkForUpdates() }.disabled(!updater.canCheckForUpdates || store.isPreparingToQuit) }
+            CommandGroup(replacing:.newItem){Button("開啟課程資料夾…"){store.chooseFolder()}.keyboardShortcut("o");Button("課程主頁"){store.selected=nil}.keyboardShortcut("h",modifiers:[.command,.shift]);Button("製作課程協議"){store.authoring()}}
+        }
     }
 }
 struct CourseHome: View {
     @ObservedObject var store:AppStore
+    @ObservedObject var updater:AppUpdater
     var body:some View {
         VStack(alignment:.leading,spacing:24) {
             HStack {Text("課程").font(.system(size:28,weight:.semibold));Spacer();Button("開啟資料夾"){store.chooseFolder()};Button("製作課程"){store.authoring()} }
+            HStack { Text(AppUpdater.versionLabel).foregroundColor(.secondary); Spacer(); Button("檢查更新") { updater.checkForUpdates() }.disabled(!updater.canCheckForUpdates) }.font(.system(size:12))
             TextField("搜尋課程",text:$store.search).textFieldStyle(.roundedBorder)
             ScrollView {
                 VStack(spacing:0){ForEach(store.filtered){entry in

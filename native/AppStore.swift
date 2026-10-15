@@ -9,6 +9,7 @@ struct CatalogEntry: Codable, Identifiable {
     var version: String
     var topics: Int
     var lastOpened: Date
+    var bundledFolder: String? = nil
 }
 @MainActor final class AppStore: ObservableObject {
     @Published var entries: [CatalogEntry] = []
@@ -16,6 +17,9 @@ struct CatalogEntry: Codable, Identifiable {
     @Published var error = ""
     @Published var shareURL = ""
     @Published var search = ""
+    @Published private(set) var isPreparingToQuit = false
+    var readerFlushers: [UUID: () async throws -> Void] = [:]
+    var readerResumers: [UUID: () async -> Void] = [:]
     let resources: URL
     let loader: CourseLoader
     let session: HostSession
@@ -23,9 +27,10 @@ struct CatalogEntry: Codable, Identifiable {
     private let catalogURL: URL
     private var loaded: [String: LoadedCourse] = [:]
     private var server: ShareServer?
-    init() {
-        resources = Bundle.main.resourceURL!
-        let data = ProcessInfo.processInfo.environment["LEARNING_APP_DATA_DIR"].map { URL(fileURLWithPath: $0) } ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("LearningShelf")
+    init(resources resourceOverride: URL? = nil, dataDirectory: URL? = nil) {
+        resources = resourceOverride ?? Bundle.main.resourceURL!
+        let testData = Bundle.main.bundleIdentifier?.hasSuffix(".update-test") == true ? (Bundle.main.object(forInfoDictionaryKey: "LearningShelfTestDataDirectory") as? String).map { URL(fileURLWithPath: $0) } : nil
+        let data = dataDirectory ?? testData ?? ProcessInfo.processInfo.environment["LEARNING_APP_DATA_DIR"].map { URL(fileURLWithPath: $0) } ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("LearningShelf")
         catalogURL = data.appendingPathComponent("catalog.json")
         do {
             loader = try CourseLoader(webRoot: resources.appendingPathComponent("Web"))
@@ -47,13 +52,21 @@ struct CatalogEntry: Codable, Identifiable {
     private func cachedURL(_ id: String) -> URL { records.folder.appendingPathComponent("course-" + id + ".json") }
     func register(_ c: LoadedCourse) {
         let bookmark = try? c.root.bookmarkData(options: [.withSecurityScope, .securityScopeAllowOnlyReadAccess], includingResourceValuesForKeys: nil, relativeTo: nil)
-        let e = CatalogEntry(id: c.id, title: c.title, path: c.root.path, bookmark: bookmark, version: c.version, topics: c.topicCount, lastOpened: Date())
+        let builtIn = c.root.deletingLastPathComponent().standardizedFileURL == resources.appendingPathComponent("Courses").standardizedFileURL ? c.root.lastPathComponent : nil
+        let e = CatalogEntry(id: c.id, title: c.title, path: c.root.path, bookmark: bookmark, version: c.version, topics: c.topicCount, lastOpened: Date(), bundledFolder: builtIn)
         if let i = entries.firstIndex(where: { $0.id == c.id }) { entries[i] = e } else { entries.append(e) }
         loaded[c.id] = c
         do { try JSONSerialization.data(withJSONObject: ["pack": c.pack, "model": c.model]).write(to: cachedURL(c.id), options: .atomic) } catch { self.error = "教材快照未保存：" + error.localizedDescription }
         saveCatalog()
     }
     func root(_ entry: CatalogEntry) -> URL {
+        // Older catalogs stored an absolute path into the app that registered them.
+        let parts = URL(fileURLWithPath: entry.path).pathComponents
+        let oldBundlePath = parts.count >= 5 && parts[parts.count-5].hasSuffix(".app") && Array(parts.suffix(4).prefix(3)) == ["Contents", "Resources", "Courses"]
+        if let folder = entry.bundledFolder ?? (oldBundlePath ? parts.last : nil), CourseLoader.safePath(folder), !folder.contains("/") {
+            let candidate = resources.appendingPathComponent("Courses/" + folder)
+            if let data = try? Data(contentsOf: candidate.appendingPathComponent("course.json")), let manifest = try? JSONSerialization.jsonObject(with: data) as? [String: Any], manifest["courseId"] as? String == entry.id { return candidate }
+        }
         if let b = entry.bookmark { var stale = false; if let u = try? URL(resolvingBookmarkData: b, options: [.withSecurityScope], relativeTo: nil, bookmarkDataIsStale: &stale) { return u } }
         return URL(fileURLWithPath: entry.path)
     }
@@ -97,5 +110,16 @@ struct CatalogEntry: Codable, Identifiable {
         guard let selected else { return }
         do { let s = try ShareServer(webRoot: resources.appendingPathComponent("Web"), course: selected, session: session); server = s; s.start { [weak self] result in Task { @MainActor in switch result { case .success(let url): self?.shareURL = url; case .failure(let e): self?.error = e.localizedDescription; self?.server = nil } } } }
         catch { self.error = error.localizedDescription }
+    }
+    func prepareToQuit() async throws {
+        isPreparingToQuit = true
+        for flush in Array(readerFlushers.values) { try await flush() }
+        try session.prepareToQuit()
+        server?.stop()
+    }
+    func resumeAfterCancelledQuit() async {
+        session.resumeAfterCancelledQuit()
+        for resume in Array(readerResumers.values) { await resume() }
+        isPreparingToQuit = false
     }
 }
