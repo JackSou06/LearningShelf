@@ -128,8 +128,8 @@ def prepare(skip_build=False):
     download = 'https://github.com/' + config['repository'] + '/releases/download/v' + config['version'] + '/' + archive.name
     write_appcast(feed, config, archive, signature, notes, download)
     sign(feed)  # Do not change the XML after this step; its signature covers the exact bytes.
-    print('Prepared:', archive)
-    print('SHA256:', digest(archive))
+    print('Prepared:', archive, flush=True)
+    print('SHA256:', digest(archive), flush=True)
     return config, archive, feed, notes
 
 
@@ -168,7 +168,9 @@ def publish(config, archive, feed, notes):
     # A successful anonymous download must precede publishing any update metadata.
     with tempfile.TemporaryDirectory(prefix='learning-download-') as temp:
         downloaded = Path(temp) / archive.name
-        run('curl', '-fL', '--retry', '2', '--connect-timeout', '20', '--max-time', '900',
+        # Newly published release assets can briefly return 404 before GitHub's edge is ready.
+        run('curl', '-fL', '--retry', '5', '--retry-all-errors', '--retry-delay', '3',
+            '--connect-timeout', '20', '--max-time', '900',
             asset['browser_download_url'], '-o', downloaded)
         if digest(downloaded) != digest(archive):
             raise RuntimeError('Public download checksum differs; feed has not been published')

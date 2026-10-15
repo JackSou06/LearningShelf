@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><!-- sparkle-sign-warning:
+IMPORTANT: This file was signed by Sparkle. Any modifications to this file requires re-signing this file with generate_appcast or sign_update! The signed signature will be embedded at the end of this file.
+--><rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+  <channel>
+    <title>LearningShelf 更新</title>
+    <link>https://github.com/JackSou06/LearningShelf</link>
+    <language>zh-TW</language>
+    <item>
+      <title>LearningShelf 0.1.8</title>
+      <pubDate>Thu, 15 Oct 2026 00:09:44 GMT</pubDate>
+      <description>&lt;p&gt;新增 App 更新功能：主頁與「學習工具」選單可按「檢查更新」。&lt;br&gt;&lt;br&gt;新版會顯示版本與更新說明，由使用者選擇下載、安裝並重新啟動。&lt;br&gt;更新清單與安裝包皆經簽章驗證；不自動檢查、下載或安裝。&lt;br&gt;&lt;br&gt;重新啟動前先保存筆記、問答草稿與 MD；AI 回答進行中或保存失敗時會暫停安裝。&lt;br&gt;安裝會中斷平板分享，重開 App 後請重新分享並使用新的網址。&lt;br&gt;筆記、進度、Q&amp;amp;A、API 設定及外部課程保留；內建課程可在 App 移動或更新後重新定位。&lt;br&gt;&lt;br&gt;此版本未經 Apple 公證，首次安裝可能需至 macOS「系統設定 → 隱私權與安全性」允許開啟。&lt;br&gt;請先將 LearningShelf.app 放到「應用程式」資料夾，再開啟及使用更新功能。&lt;br&gt;&lt;/p&gt;</description>
+      <sparkle:version>11</sparkle:version>
+      <sparkle:shortVersionString>0.1.8</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/JackSou06/LearningShelf/releases/download/v0.1.8/LearningShelf-0.1.8.zip" length="39434935" type="application/octet-stream" sparkle:edSignature="zGii9nvwTqFH0YRrC19qKQJKTD5VDLno5/YKAsY8G2uyUg03/VU2wbn/vGIFIYGEnXsbx0XFQvgTW4ilwBDWCA=="></enclosure>
+    </item>
+  </channel>
+</rss><!-- sparkle-signatures:
+edSignature: TS2m3xXP24pfZ/n61ZTqcs+Pgy05JPipGSOJCgX74ACrxIYic+sfKyEnuYYGLP4Hu9d85tk4VutJOgTkwqDoBg==
+length: 2084
+-->
