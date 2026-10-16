@@ -6,16 +6,16 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
     <link>https://github.com/JackSou06/LearningShelf</link>
     <language>zh-TW</language>
     <item>
-      <title>LearningShelf 0.2.1</title>
-      <pubDate>Fri, 16 Oct 2026 13:07:18 GMT</pubDate>
-      <description>&lt;p&gt;Q&amp;amp;A 表格顯示修正。&lt;br&gt;&lt;br&gt;AI 回答中的 Markdown 表格現在會顯示表頭、框線、隔行底色，支援靠左、置中及靠右對齊。寬表格可在回答內左右捲動，適用於桌面與窄視窗。&lt;br&gt;&lt;br&gt;表格內可使用粗體、HTTPS 連結及行內程式碼，並能保留跳脫的直線符號與程式碼中的直線符號。兼容缺少首欄表頭及表格行尾帶反斜線的既有回答。&lt;br&gt;&lt;br&gt;已保存的 Q&amp;amp;A 會直接套用新的顯示格式，不需要重新提問；原始回答、筆記及學習紀錄保持原樣。&lt;br&gt;&lt;br&gt;同時修正多重反引號的行內程式碼顯示，保留程式碼內的 Markdown 字元。&lt;br&gt;&lt;/p&gt;</description>
-      <sparkle:version>14</sparkle:version>
-      <sparkle:shortVersionString>0.2.1</sparkle:shortVersionString>
+      <title>LearningShelf 0.2.2</title>
+      <pubDate>Fri, 16 Oct 2026 20:13:05 GMT</pubDate>
+      <description>&lt;p&gt;Q&amp;amp;A 數學公式顯示更新。&lt;br&gt;&lt;br&gt;AI 回答現在支援 LaTeX 公式：使用 \[...\] 或 $$...$$ 顯示區塊公式，使用 \(...\) 或 $...$ 顯示行內公式。上標、下標、分數、多行對齊與表格內的公式皆使用 App 內建的本機公式引擎呈現，不需另外連線下載字型或程式。&lt;br&gt;&lt;br&gt;例如 a\,a^{-1}=a^{-1}a=1. 現在會以數學公式顯示。長公式可在回答內橫向捲動，避免撐寬畫面。&lt;br&gt;&lt;br&gt;行內程式碼與程式碼區塊中的 LaTeX 保留原樣；語法錯誤或未完成的公式保留原文，不影響其他回答。既有 Q&amp;amp;A 重新開啟即可套用，無需重新提問；保存與匯出的原始回答保持不變。&lt;br&gt;&lt;/p&gt;</description>
+      <sparkle:version>15</sparkle:version>
+      <sparkle:shortVersionString>0.2.2</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
-      <enclosure url="https://github.com/JackSou06/LearningShelf/releases/download/v0.2.1/LearningShelf-0.2.1.zip" length="40156205" type="application/octet-stream" sparkle:edSignature="2QwKMWKF4bU0MR8LhWbmhE4MO620UlPsufT/waZUmcrRIrVKg7C1M/BDKSBwLLlCdEYHUrtyocMsxDgWblJOCA=="></enclosure>
+      <enclosure url="https://github.com/JackSou06/LearningShelf/releases/download/v0.2.2/LearningShelf-0.2.2.zip" length="40157302" type="application/octet-stream" sparkle:edSignature="Fc0gLUruWFz7qDyynNR2HGtY6bw5hwE1RD/+DIMnGlSwAHSV82VAUY8tHFWEUUdkIfcwBrHOzl45NlxISHZXCg=="></enclosure>
     </item>
   </channel>
 </rss><!-- sparkle-signatures:
-edSignature: D50fbwDHrLTq5y4UolA2/5bak7gEOciuwsEs3ptlZ/47wUKPU22UKry7H0v5kirxjP7WxPr7TPr4zjaB9ch3BA==
-length: 1922
+edSignature: T7MJtAWTneb0fkYin7TvQXCFGlnF8RlO+nwtYpdRtSsXfm3p9IwRY9FAbkGX4LwsHPxRIJgSeB5c9rwHcrdpCQ==
+length: 1945
 -->
