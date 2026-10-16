@@ -8,8 +8,68 @@ const expanded=new Set(),positions={},selections={},library=[...window.BUNDLED_C
 function toast(t){$('#toast').textContent=t;$('#toast').classList.add('show');clearTimeout(timer);timer=setTimeout(()=>$('#toast').classList.remove('show'),4000);}
 window.addEventListener('error',e=>toast('閱讀器錯誤：'+e.message));
 window.addEventListener('unhandledrejection',e=>toast('閱讀器錯誤：'+(e.reason?.message||String(e.reason))));
-function inline(s){return esc(s).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\[([^\]]+)\]\((https:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');}
-function md(text){const out=[];let fence=null,code=[],list=null,para=[];const flush=()=>{if(para.length){out.push('<p>'+inline(para.join('\n')).replace(/\n/g,'<br>')+'</p>');para=[];}};const endList=()=>{if(list){out.push('</'+list+'>');list=null;}};for(const line of String(text).split('\n')){if(/^\s*```/.test(line)){flush();endList();if(fence!==null){out.push('<pre><code>'+esc(code.join('\n'))+'</code></pre>');fence=null;code=[];}else fence=line.slice(3);continue;}if(fence!==null){code.push(line);continue;}const h=line.match(/^(#{1,6})\s+(.+)/),li=line.match(/^\s*(?:([-*])|\d+\.)\s+(.+)/);if(h){flush();endList();const n=Math.min(3,Math.max(2,h[1].length));out.push('<h'+n+'>'+inline(h[2])+'</h'+n+'>');}else if(li){flush();const tag=li[1]?'ul':'ol';if(list!==tag){endList();list=tag;out.push('<'+tag+'>');}out.push('<li>'+inline(li[2])+'</li>');}else if(!line.trim()){flush();endList();}else{endList();para.push(line);}}flush();endList();if(fence!==null)out.push('<pre><code>'+esc(code.join('\n'))+'</code></pre>');return out.join('');}
+function inline(s){
+ const format=text=>esc(text).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\[([^\]]+)\]\((https:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+ const text=String(s??''),code=/(`+)([\s\S]*?)\1(?!`)/g;let out='',last=0,match;
+ while((match=code.exec(text))){out+=format(text.slice(last,match.index))+'<code>'+esc(match[2])+'</code>';last=code.lastIndex;}
+ return out+format(text.slice(last));
+}
+// Split only structural pipes; escaped pipes and inline code stay inside a cell.
+function tableCells(raw){
+ const line=raw.trim().replace(/\|[ \t]*\\$/,'|').replace(/^\\(?=\|)/,'');
+ const cells=[];let cell='',fence=0,separators=0;
+ for(let i=0;i<line.length;i++){
+  const ch=line[i];
+  if(ch==='\\'&&(line[i+1]==='|'||line[i+1]==='\\')){cell+=line[++i];continue;}
+  if(ch==='`'){
+   let end=i+1;while(line[end]==='`')end++;
+   const count=end-i;if(!fence)fence=count;else if(fence===count)fence=0;
+   cell+=line.slice(i,end);i=end-1;continue;
+  }
+  if(ch==='|'&&!fence){cells.push(cell.trim());cell='';separators++;}else cell+=ch;
+ }
+ if(!separators)return null;
+ cells.push(cell.trim());
+ if(line.startsWith('|'))cells.shift();
+ if(cells[cells.length-1]===''&&line.endsWith('|'))cells.pop();
+ return cells;
+}
+function markdownTable(headers,alignments,rows){
+ const row=(cells,header)=>'<tr>'+alignments.map((alignment,i)=>{
+  const tag=header?'th':'td';
+  return '<'+tag+(header?' scope="col"':'')+(alignment?' style="text-align:'+alignment+'"':'')+'>'+inline(cells[i]||'')+'</'+tag+'>';
+ }).join('')+'</tr>';
+ return '<div class="markdown-table" role="region" aria-label="表格（可左右捲動）" tabindex="0"><table><thead>'+row(headers,true)+'</thead><tbody>'+rows.map(cells=>row(cells,false)).join('')+'</tbody></table></div>';
+}
+function md(text){
+ const out=[],lines=String(text).replace(/\r\n?/g,'\n').split('\n');let fence=null,code=[],list=null,para=[];
+ const flush=()=>{if(para.length){out.push('<p>'+inline(para.join('\n')).replace(/\n/g,'<br>')+'</p>');para=[];}};
+ const endList=()=>{if(list){out.push('</'+list+'>');list=null;}};
+ for(let i=0;i<lines.length;i++){
+  const line=lines[i];
+  if(/^\s*```/.test(line)){flush();endList();if(fence!==null){out.push('<pre><code>'+esc(code.join('\n'))+'</code></pre>');fence=null;code=[];}else fence=line.slice(3);continue;}
+  if(fence!==null){code.push(line);continue;}
+  const headers=tableCells(line),divider=tableCells(lines[i+1]||'');
+  if(headers?.length&&divider?.length&&headers.length<=divider.length&&divider.every(cell=>/^:?-{3,}:?$/.test(cell))){
+   flush();endList();
+   // Some AI answers omit the empty heading above a leading address/index column.
+   while(headers.length<divider.length)headers.unshift('');
+   const alignments=divider.map(cell=>cell.startsWith(':')?(cell.endsWith(':')?'center':'left'):(cell.endsWith(':')?'right':'')),rows=[];
+   i++;
+   while(i+1<lines.length){
+    const next=lines[i+1];if(!next.trim()||/^\s*(?:```|#{1,6}\s|[-*]\s|\d+\.\s)/.test(next))break;
+    const cells=tableCells(next);if(!cells)break;
+    rows.push(cells);i++;
+   }
+   out.push(markdownTable(headers,alignments,rows));continue;
+  }
+  const h=line.match(/^(#{1,6})\s+(.+)/),li=line.match(/^\s*(?:([-*])|\d+\.)\s+(.+)/);
+  if(h){flush();endList();const n=Math.min(3,Math.max(2,h[1].length));out.push('<h'+n+'>'+inline(h[2])+'</h'+n+'>');}
+  else if(li){flush();const tag=li[1]?'ul':'ol';if(list!==tag){endList();list=tag;out.push('<'+tag+'>');}out.push('<li>'+inline(li[2])+'</li>');}
+  else if(!line.trim()){flush();endList();}else{endList();para.push(line);}
+ }
+ flush();endList();if(fence!==null)out.push('<pre><code>'+esc(code.join('\n'))+'</code></pre>');return out.join('');
+}
 function uid(){return crypto.randomUUID?.()||'record-'+Date.now()+'-'+Math.random().toString(36).slice(2);}
 const clone=x=>JSON.parse(JSON.stringify(x));
 let syncBase=null,lastQueued=null,saves=0,dirty=false,saveFailed=false,pulling=false;
