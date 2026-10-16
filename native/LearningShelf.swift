@@ -51,51 +51,17 @@ import UniformTypeIdentifiers
         }.defaultSize(width:1100,height:820)
         .commands {
             CommandGroup(after:.appInfo) { Button("檢查更新…") { updater.checkForUpdates() }.disabled(!updater.canCheckForUpdates || store.isPreparingToQuit) }
-            CommandGroup(replacing:.newItem){Button("匯入課程…"){store.chooseFolder()}.keyboardShortcut("o");Button("課程主頁"){store.selected=nil}.keyboardShortcut("h",modifiers:[.command,.shift]);Button("製作課程協議"){store.authoring()}}
+            CommandGroup(replacing:.newItem) {
+                Button("新增資料夾",action:store.createShelfFolder).keyboardShortcut("n",modifiers:[.command,.shift]).disabled(!store.canOrganizeShelf || store.shelfIsTrash)
+                Button("匯入教材…",action:store.chooseFolder).keyboardShortcut("i",modifiers:[.command,.shift]).disabled(store.isImporting)
+                Button("開啟所選項目",action:store.openSelectedShelfItem).keyboardShortcut("o").disabled(store.selected != nil || store.shelfSelection.count != 1)
+                Button("教材主頁"){store.selected=nil}.keyboardShortcut("h",modifiers:[.command,.shift])
+                Button("製作課程協議",action:store.authoring)
+            }
+            CommandGroup(replacing:.undoRedo) {
+                Button("復原") { if store.selected != nil || NSApp.keyWindow?.firstResponder is NSTextView {NSApp.sendAction(Selector(("undo:")),to:nil,from:nil)} else {store.undoShelfChange()} }.keyboardShortcut("z").disabled(store.selected == nil && !(NSApp.keyWindow?.firstResponder is NSTextView) && !store.shelfCanUndo)
+                Button("重做") { if store.selected != nil || NSApp.keyWindow?.firstResponder is NSTextView {NSApp.sendAction(Selector(("redo:")),to:nil,from:nil)} else {store.undoShelfChange(redo:true)} }.keyboardShortcut("z",modifiers:[.command,.shift]).disabled(store.selected == nil && !(NSApp.keyWindow?.firstResponder is NSTextView) && !store.shelfCanRedo)
+            }
         }
-    }
-}
-struct CourseHome: View {
-    @ObservedObject var store: AppStore
-    @ObservedObject var updater: AppUpdater
-    var body: some View {
-        VStack(alignment:.leading,spacing:20) {
-            HStack {
-                Text("課程").font(.system(size:28,weight:.semibold))
-                Spacer()
-                Button("匯入課程"){store.chooseFolder()}
-                Button("製作課程"){store.authoring()}
-            }
-            Text("將課程 ZIP 拖到這裡，或匯入課程資料夾。驗證後由 App 保存教材。").font(.system(size:13)).foregroundColor(.secondary)
-            HStack {
-                Text(AppUpdater.versionLabel).foregroundColor(.secondary)
-                Spacer()
-                Button("檢查更新"){updater.checkForUpdates()}.disabled(!updater.canCheckForUpdates)
-            }.font(.system(size:12))
-            TextField("搜尋課程",text:$store.search).textFieldStyle(.roundedBorder)
-            ScrollView {
-                VStack(spacing:0) {
-                    ForEach(store.filtered) { entry in
-                        HStack(spacing:16) {
-                            VStack(alignment:.leading,spacing:7) {
-                                Text(entry.title).font(.system(size:17,weight:.medium))
-                                Text(store.readStats(entry)+" · 版本 "+entry.version).font(.system(size:12)).foregroundColor(.secondary)
-                            }
-                            Spacer()
-                            Button("繼續學習"){store.open(entry)}.buttonStyle(.bordered)
-                            Button { store.requestDelete(entry) } label: { Image(systemName:"trash").padding(5) }
-                                .buttonStyle(.borderless).help("刪除課程").accessibilityLabel("刪除課程："+entry.title)
-                        }.padding(.vertical,20)
-                        .contextMenu {
-                            Button("在 Finder 顯示"){store.reveal(entry)}
-                            Button("更新教材…"){store.chooseFolder()}
-                            Button("刪除課程…",role:.destructive){store.requestDelete(entry)}
-                        }
-                        Divider()
-                    }
-                }
-            }
-            if store.entries.isEmpty { Text("匯入第一門課程開始學習。").foregroundColor(.secondary) }
-        }.padding(40).frame(maxWidth:1000).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.top)
     }
 }
