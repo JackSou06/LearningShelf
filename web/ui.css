@@ -109,6 +109,11 @@ main { padding:26px 36px 18px; gap:14px; }
 .markdown-table tbody tr:last-child td { border-bottom:0; }
 .markdown-table tbody tr:nth-child(even) { background:#f8faf6; }
 .markdown-table code { white-space:pre-wrap; }
+/* MathML uses the same local formula engine as lesson math blocks. */
+.markdown-math-inline { display:inline; font-size:1.08em; }
+.markdown-math-display { display:block; max-width:100%; overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain; padding:10px 4px; margin:8px 0; text-align:center; font-size:1.12em; }
+.markdown-math-display math { min-width:max-content; margin:0 auto; }
+.markdown-math-fallback code { white-space:pre-wrap; overflow-wrap:anywhere; }
 /* Notes and records */
 dialog { border-radius:16px; border-color:var(--line); box-shadow:0 20px 80px #1c342229; padding:26px; }
 dialog::backdrop { background:#23382a45; }

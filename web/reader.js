@@ -8,10 +8,56 @@ const expanded=new Set(),positions={},selections={},library=[...window.BUNDLED_C
 function toast(t){$('#toast').textContent=t;$('#toast').classList.add('show');clearTimeout(timer);timer=setTimeout(()=>$('#toast').classList.remove('show'),4000);}
 window.addEventListener('error',e=>toast('閱讀器錯誤：'+e.message));
 window.addEventListener('unhandledrejection',e=>toast('閱讀器錯誤：'+(e.reason?.message||String(e.reason))));
-function inline(s){
- const format=text=>esc(text).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\[([^\]]+)\]\((https:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
- const text=String(s??''),code=/(`+)([\s\S]*?)\1(?!`)/g;let out='',last=0,match;
- while((match=code.exec(text))){out+=format(text.slice(last,match.index))+'<code>'+esc(match[2])+'</code>';last=code.lastIndex;}
+function escapedAt(text,index){let count=0;while(index>0&&text[--index]==='\\')count++;return count%2===1;}
+function codeEnd(text,start){
+ let end=start;while(text[end]==='`')end++;
+ const ticks=text.slice(start,end);let close=text.indexOf(ticks,end);
+ while(close!==-1&&(text[close-1]==='`'||text[close+ticks.length]==='`'))close=text.indexOf(ticks,close+ticks.length);
+ if(close!==-1)return close+ticks.length;
+ // An unfinished fenced block is still code, so do not render its contents.
+ return ticks.length>=3&&/^[ \t]*$/.test(text.slice(text.lastIndexOf('\n',start-1)+1,start))?text.length:end;
+}
+function mathAt(text,start){
+ if(escapedAt(text,start))return null;
+ const open=text.startsWith('\\[',start)?'\\[':text.startsWith('\\(',start)?'\\(':text.startsWith('$$',start)?'$$':text[start]==='$'?'$':null;
+ if(!open)return null;
+ const close=open==='\\['?'\\]':open==='\\('?'\\)':open,from=start+open.length;
+ let end=text.indexOf(close,from);
+ while(end!==-1&&escapedAt(text,end))end=text.indexOf(close,end+close.length);
+ if(end===-1)return null;
+ const latex=text.slice(from,end),display=open==='\\['||open==='$$';
+ if(!latex.trim())return null;
+ // A single dollar pair stays on one line and must not join two prices.
+ if(open==='$'&&(/\n/.test(latex)||/^\s|\s$/.test(latex)||/\d/.test(text[end+1]||'')||text[end+1]==='$'))return null;
+ return {latex,display,raw:text.slice(start,end+close.length),end:end+close.length};
+}
+function protectMath(value){
+ const source=String(value??''),expressions=[];let marker='\uE000';while(source.includes(marker))marker+='\uE000';
+ let text='',last=0;
+ for(let i=0;i<source.length;){
+  if(source[i]==='`'){i=codeEnd(source,i);continue;}
+  const expression=(source[i]==='\\'||source[i]==='$')?mathAt(source,i):null;
+  if(!expression){i++;continue;}
+  text+=source.slice(last,i)+marker+expressions.length+'\uE001';expressions.push(expression);i=expression.end;last=i;
+ }
+ return {text:text+source.slice(last),expressions,marker};
+}
+function mathHTML(expression){
+ const kind=expression.display?'markdown-math-display':'markdown-math-inline';
+ try{
+  const html=window.katex.renderToString(expression.latex,{displayMode:expression.display,output:'mathml',throwOnError:true,trust:false,strict:'ignore',maxExpand:1000,maxSize:20});
+  return '<span class="markdown-math '+kind+'">'+html+'</span>';
+ }catch(error){
+  return '<span class="markdown-math-fallback '+kind+'" title="公式無法解析，保留原文"><code>'+esc(expression.raw)+'</code></span>';
+ }
+}
+function inline(s,context){
+ const math=context||protectMath(s),text=context?String(s??''):math.text;
+ const format=value=>esc(value).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\[([^\]]+)\]\((https:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>').replace(/\n/g,'<br>');
+ const tokens=new RegExp('(`+)([\\s\\S]*?)\\1(?!`)|'+math.marker+'(\\d+)\uE001','g');let out='',last=0,match;
+ while((match=tokens.exec(text))){
+  out+=format(text.slice(last,match.index))+(match[1]?'<code>'+esc(match[2])+'</code>':mathHTML(math.expressions[Number(match[3])]));last=tokens.lastIndex;
+ }
  return out+format(text.slice(last));
 }
 // Split only structural pipes; escaped pipes and inline code stay inside a cell.
@@ -34,16 +80,17 @@ function tableCells(raw){
  if(cells[cells.length-1]===''&&line.endsWith('|'))cells.pop();
  return cells;
 }
-function markdownTable(headers,alignments,rows){
+function markdownTable(headers,alignments,rows,renderInline=inline){
  const row=(cells,header)=>'<tr>'+alignments.map((alignment,i)=>{
   const tag=header?'th':'td';
-  return '<'+tag+(header?' scope="col"':'')+(alignment?' style="text-align:'+alignment+'"':'')+'>'+inline(cells[i]||'')+'</'+tag+'>';
+  return '<'+tag+(header?' scope="col"':'')+(alignment?' style="text-align:'+alignment+'"':'')+'>'+renderInline(cells[i]||'')+'</'+tag+'>';
  }).join('')+'</tr>';
  return '<div class="markdown-table" role="region" aria-label="表格（可左右捲動）" tabindex="0"><table><thead>'+row(headers,true)+'</thead><tbody>'+rows.map(cells=>row(cells,false)).join('')+'</tbody></table></div>';
 }
 function md(text){
- const out=[],lines=String(text).replace(/\r\n?/g,'\n').split('\n');let fence=null,code=[],list=null,para=[];
- const flush=()=>{if(para.length){out.push('<p>'+inline(para.join('\n')).replace(/\n/g,'<br>')+'</p>');para=[];}};
+ const math=protectMath(String(text).replace(/\r\n?/g,'\n')),renderInline=value=>inline(value,math);
+ const out=[],lines=math.text.split('\n');let fence=null,code=[],list=null,para=[];
+ const flush=()=>{if(para.length){out.push('<p>'+renderInline(para.join('\n'))+'</p>');para=[];}};
  const endList=()=>{if(list){out.push('</'+list+'>');list=null;}};
  for(let i=0;i<lines.length;i++){
   const line=lines[i];
@@ -61,11 +108,11 @@ function md(text){
     const cells=tableCells(next);if(!cells)break;
     rows.push(cells);i++;
    }
-   out.push(markdownTable(headers,alignments,rows));continue;
+   out.push(markdownTable(headers,alignments,rows,renderInline));continue;
   }
   const h=line.match(/^(#{1,6})\s+(.+)/),li=line.match(/^\s*(?:([-*])|\d+\.)\s+(.+)/);
-  if(h){flush();endList();const n=Math.min(3,Math.max(2,h[1].length));out.push('<h'+n+'>'+inline(h[2])+'</h'+n+'>');}
-  else if(li){flush();const tag=li[1]?'ul':'ol';if(list!==tag){endList();list=tag;out.push('<'+tag+'>');}out.push('<li>'+inline(li[2])+'</li>');}
+  if(h){flush();endList();const n=Math.min(3,Math.max(2,h[1].length));out.push('<h'+n+'>'+renderInline(h[2])+'</h'+n+'>');}
+  else if(li){flush();const tag=li[1]?'ul':'ol';if(list!==tag){endList();list=tag;out.push('<'+tag+'>');}out.push('<li>'+renderInline(li[2])+'</li>');}
   else if(!line.trim()){flush();endList();}else{endList();para.push(line);}
  }
  flush();endList();if(fence!==null)out.push('<pre><code>'+esc(code.join('\n'))+'</code></pre>');return out.join('');
