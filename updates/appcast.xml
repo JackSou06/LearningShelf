@@ -6,16 +6,16 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
     <link>https://github.com/JackSou06/LearningShelf</link>
     <language>zh-TW</language>
     <item>
-      <title>LearningShelf 0.2.0</title>
-      <pubDate>Fri, 16 Oct 2026 09:08:14 GMT</pubDate>
-      <description>&lt;p&gt;教材庫資料夾管理與閱讀介面更新。&lt;br&gt;&lt;br&gt;主頁新增資料夾與子資料夾，可依課程、學期和課題整理教材。支援重新命名、多選移動、拖放、自訂排序、釘選、範圍搜尋，以及卡片／列表切換。&lt;br&gt;&lt;br&gt;刪除教材或資料夾會先移到 App 垃圾桶，可連同子項目還原。永久刪除另行確認，預設保留學習紀錄。移動和重新命名保留筆記、Q&amp;amp;A、作答及閱讀進度；更新相同課程 ID 時保留自訂名稱、分類位置與釘選。&lt;br&gt;&lt;br&gt;在資料夾中匯入教材可直接歸檔。主頁新增路徑導覽、最近學習與快捷操作，並保存顯示方式與瀏覽位置。既有教材首次升級後位於根目錄，可自行分類。&lt;br&gt;&lt;br&gt;閱讀器更新字級、留白、色彩及操作提示。寬螢幕可固定目錄、並排寫筆記，學習紀錄改為摘要呈現，測驗明確標示你的選擇與正確答案。&lt;br&gt;&lt;br&gt;資料夾整理適用於 macOS App 主頁；獨立 HTML 保留教材選擇與閱讀功能。支援 macOS 13 以上、Apple Silicon 與 Intel。&lt;br&gt;&lt;/p&gt;</description>
-      <sparkle:version>13</sparkle:version>
-      <sparkle:shortVersionString>0.2.0</sparkle:shortVersionString>
+      <title>LearningShelf 0.2.1</title>
+      <pubDate>Fri, 16 Oct 2026 13:07:18 GMT</pubDate>
+      <description>&lt;p&gt;Q&amp;amp;A 表格顯示修正。&lt;br&gt;&lt;br&gt;AI 回答中的 Markdown 表格現在會顯示表頭、框線、隔行底色，支援靠左、置中及靠右對齊。寬表格可在回答內左右捲動，適用於桌面與窄視窗。&lt;br&gt;&lt;br&gt;表格內可使用粗體、HTTPS 連結及行內程式碼，並能保留跳脫的直線符號與程式碼中的直線符號。兼容缺少首欄表頭及表格行尾帶反斜線的既有回答。&lt;br&gt;&lt;br&gt;已保存的 Q&amp;amp;A 會直接套用新的顯示格式，不需要重新提問；原始回答、筆記及學習紀錄保持原樣。&lt;br&gt;&lt;br&gt;同時修正多重反引號的行內程式碼顯示，保留程式碼內的 Markdown 字元。&lt;br&gt;&lt;/p&gt;</description>
+      <sparkle:version>14</sparkle:version>
+      <sparkle:shortVersionString>0.2.1</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
-      <enclosure url="https://github.com/JackSou06/LearningShelf/releases/download/v0.2.0/LearningShelf-0.2.0.zip" length="40155011" type="application/octet-stream" sparkle:edSignature="G1tuodqW7vmK8uTH4keSduhaumOvLDldb3crcpIIucb4zxSTPmvuqjev0WvnwPV7KvAVJt9iamJFldwfDpbdAw=="></enclosure>
+      <enclosure url="https://github.com/JackSou06/LearningShelf/releases/download/v0.2.1/LearningShelf-0.2.1.zip" length="40156205" type="application/octet-stream" sparkle:edSignature="2QwKMWKF4bU0MR8LhWbmhE4MO620UlPsufT/waZUmcrRIrVKg7C1M/BDKSBwLLlCdEYHUrtyocMsxDgWblJOCA=="></enclosure>
     </item>
   </channel>
 </rss><!-- sparkle-signatures:
-edSignature: Q4ZOx9RE5Xa7a+EmtjSAKsOw95eeKthoYgcDgkbtnGigTQaoBvfekkIMxwYECtIoYZB8LSf5XQGc042Ap0Q1Cw==
-length: 2351
+edSignature: D50fbwDHrLTq5y4UolA2/5bak7gEOciuwsEs3ptlZ/47wUKPU22UKry7H0v5kirxjP7WxPr7TPr4zjaB9ch3BA==
+length: 1922
 -->
