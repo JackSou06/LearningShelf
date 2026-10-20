@@ -33,6 +33,10 @@ def main():
         if args.pptx:
             command.append(str(args.pptx.resolve()))
         subprocess.run(command, check=True)
+        binary = scratch / 'inline-visuals'
+        compile_check('inline_visual_checks', [*sources, fixture], binary)
+        visuals = Path(tempfile.mkdtemp(prefix='inline-visuals-', dir=output))
+        subprocess.run([str(binary), str(ROOT), str(visuals), str(materials / 'fixture.pdf')], check=True)
         if args.ui:
             binary = scratch / 'ui'
             compile_check('authoring_ui_checks', [*sources, fixture, ROOT / 'native/CourseAuthoringView.swift'], binary)

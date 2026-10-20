@@ -35,6 +35,10 @@ const {loadFolder} = require('../scripts/validate-course.cjs');
         assert.equal(await locator.count(), 1);
         await locator.evaluate(img => img.complete ? Promise.resolve() : new Promise((resolve, reject) => {img.onload = resolve; img.onerror = reject;}));
         assert.ok(await locator.evaluate(img => img.naturalWidth > 0));
+        if (image.teachingBlockIds) {
+          const order = await page.locator('#lesson [data-block]').evaluateAll(elements => elements.map(element => element.dataset.block));
+          for (const id of image.teachingBlockIds) assert.equal(Math.abs(order.indexOf(image.imageBlockId) - order.indexOf(id)), 1, 'Image must be adjacent to its teaching in actual reading DOM');
+        }
       }
       if (hidden.length) {
         await page.locator('#context-open').click();
@@ -54,8 +58,25 @@ const {loadFolder} = require('../scripts/validate-course.cjs');
       await selectTopic(map[0].topicId);
       await page.screenshot({path: path.join(output, 'generated-course-image-topic.png')});
     }
+    const crop = map.find(image => image.crop);
+    if (crop) {
+      await selectTopic(crop.topicId);
+      await page.waitForTimeout(200);
+      const onSheet = async () => page.evaluate(id => {
+        const image = document.querySelector('[data-block="' + id + '"] img').getBoundingClientRect();
+        const view = document.querySelector('#book-viewport').getBoundingClientRect();
+        return image.left < view.right && image.right > view.left && image.top < view.bottom && image.bottom > view.top;
+      }, crop.imageBlockId);
+      for (let sheet = 0; sheet < 40 && !await onSheet(); sheet++) {
+        await page.locator('#next').click();
+        await page.waitForTimeout(250);
+      }
+      assert.ok(await onSheet(), 'Crop must be reachable through actual next-page navigation');
+      await page.screenshot({path: path.join(output, 'generated-course-inline-crop.png')});
+      assert.ok(await onSheet(), 'Crop must remain visible after screenshot');
+    }
     const report = {passed: true, topics: plan.topics.length, images: map.length, detailCount,
-      hiddenDetailsAbsentFromDOM: true, fullDetailsInActualQAPreview: true, allImagesLoaded: true, remoteQACalled: false};
+      hiddenDetailsAbsentFromDOM: true, fullDetailsInActualQAPreview: true, allImagesLoaded: true, croppedImageOnReadingSheet: !!crop, remoteQACalled: false};
     fs.writeFileSync(path.join(output, 'generated-course-browser.json'), JSON.stringify(report, null, 2) + '\n');
     console.log(JSON.stringify(report));
   } finally { await browser.close(); }

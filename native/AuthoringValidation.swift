@@ -11,7 +11,7 @@ struct AuthoringValidationResult: Codable {
 
 enum AuthoringValidation {
     static func inspect(job: URL, prepared: PreparedCoursePackage, loader: CourseLoader,
-                        courseID: String, manifest: AuthoringInputManifest) throws -> AuthoringValidationResult {
+                        courseID: String, manifest: AuthoringInputManifest, renderedVisuals: AuthoringVisuals.Result? = nil) throws -> AuthoringValidationResult {
         let course = try loader.load(prepared.courseRoot), root = prepared.courseRoot
         var errors: [String] = [], checks: [String: Bool] = [:]
         func require(_ passed: Bool, _ key: String, _ message: String) {
@@ -56,6 +56,7 @@ enum AuthoringValidation {
         require(map["images"] is [[String: Any]], "imageMapPresent", "缺少有效的IMAGE_MAP.json。")
         let images = map["images"] as? [[String: Any]] ?? []
         var mappedImages = Set<String>(), mappedSourceImages = Set<String>(), details = 0, imagesValid = true
+        var cropsValid = true, placementValid = true, cropReferencesValid = true
         for entry in images {
             guard let topicID = entry["topicId"] as? String, let topic = byID[topicID],
                   let imageID = entry["imageBlockId"] as? String,
@@ -64,13 +65,45 @@ enum AuthoringValidation {
                   let ids = entry["detailBlockIds"] as? [String], !ids.isEmpty else { imagesValid = false; continue }
             let key = topicID + ":" + imageID
             if !mappedImages.insert(key).inserted { imagesValid = false }
+            let visible = blocks.filter { !($0["type"] as? String == "markdown" && $0["visibility"] as? String == "contextOnly") }
+            if let teachingIDs = entry["teachingBlockIds"] as? [String], !teachingIDs.isEmpty,
+               let index = visible.firstIndex(where: { $0["id"] as? String == imageID }) {
+                for id in teachingIDs {
+                    if let teaching = visible.firstIndex(where: { $0["id"] as? String == id && $0["type"] as? String != "image" }), abs(index - teaching) == 1 { }
+                    else { placementValid = false }
+                }
+            } else { placementValid = false }
             let context = loader.context.objectForKeyedSubscript("CourseCore")?.forProperty("context")?.call(withArguments: [course.model, topic, ["notes": [:], "qa": []]])?.toString() ?? ""
             for id in ids {
                 guard let b = blocks.first(where: { $0["id"] as? String == id && $0["type"] as? String == "markdown" && $0["visibility"] as? String == "contextOnly" }),
                       let md = b["text"] as? String, !md.isEmpty, context.contains(md) else { imagesValid = false; continue }
                 details += 1
             }
-            if let sourceImage = entry["sourceImage"] as? String {
+            if entry["crop"] != nil {
+                do {
+                    guard let file = image["file"] as? String else { throw AuthoringFailure("裁圖缺少檔案。") }
+                    var crop = entry; crop["file"] = file
+                    let expected: AuthoringVisuals.Preview
+                    if let renderedVisuals {
+                        let region = try AuthoringVisuals.region(crop["crop"])
+                        guard let proof = renderedVisuals.crops.first(where: { $0.topicId == topicID && $0.imageBlockId == imageID && $0.file == file && $0.sourceImage == crop["sourceImage"] as? String && $0.crop == region }) else { throw AuthoringFailure("裁圖對照在原生渲染後已變更，須重新產生並核對。") }
+                        expected = proof
+                    } else { expected = try AuthoringVisuals.render(crop, job: job, manifest: manifest).1 }
+                    if (try? AuthoringMaterials.hash(root.appendingPathComponent(file))) != expected.sha256 { cropsValid = false }
+                    if let source = manifest.sources.first(where: { $0.pages.contains { $0.image == expected.sourceImage } }) {
+                        let courseSources = course.model["sources"] as? [[String: Any]] ?? []
+                        let sourceIDs = Set(courseSources.filter { $0["file"] as? String == "sources/" + URL(fileURLWithPath: source.file).lastPathComponent }.compactMap { $0["id"] as? String })
+                        let references = image["references"] as? [[String: Any]] ?? []
+                        let located = references.contains { ref in
+                            guard let id = ref["sourceId"] as? String, sourceIDs.contains(id) else { return false }
+                            if !["pdf", "pptx"].contains(source.kind) { return true }
+                            let locator = ref["locator"] as? [String: Any]
+                            return locator?["kind"] as? String == "pdfPage" && locator?["value"] as? Int == expected.page
+                        }
+                        if !located { cropReferencesValid = false }
+                    } else { cropReferencesValid = false }
+                } catch { cropsValid = false; errors.append(error.localizedDescription) }
+            } else if let sourceImage = entry["sourceImage"] as? String {
                 let expected = manifest.sources.flatMap(\.pages).first { $0.image == sourceImage }
                 if let expected, let file = image["file"] as? String, (try? AuthoringMaterials.hash(root.appendingPathComponent(file))) == expected.sha256 {
                     mappedSourceImages.insert(sourceImage)
@@ -85,6 +118,9 @@ enum AuthoringValidation {
             }
         }
         require(imagesValid && images.count == count, "allImagesHaveHiddenQAContext", "每張課程圖片須在IMAGE_MAP.json對應本主題的隱藏詳述，且全文確實進入Q&A；不能重複或漏列圖片。")
+        require(cropsValid, "allCropsMatchSourceRegions", "裁圖與原始來源指定區域不一致，或來源／座標無效。")
+        require(cropReferencesValid, "cropsHaveOriginalLocators", "裁圖須引用已保存的原教材；PDF／PPTX 頁序須與裁圖來源一致，讓讀者可開啟原頁核對。")
+        require(placementValid, "imagesAdjacentToTeaching", "每張圖片須以 teachingBlockIds 對應同主題、相鄰的可見教學區塊；不能只把必要圖示集中在主題最後。")
         let expected = Set(manifest.sources.flatMap(\.pages).map(\.image))
         require(expected.isSubset(of: mappedSourceImages), "allSourcePagesPreserved", "有原投影片／圖片未完整保留，或圖檔與來源不一致：\(expected.subtracting(mappedSourceImages).sorted().prefix(20).joined(separator: ","))")
         let fm = FileManager.default
@@ -97,6 +133,6 @@ enum AuthoringValidation {
             require(safe, "contentFilesOnly", "課程目錄不得包含App、腳本、執行檔或不支援的檔案。")
         }
         return AuthoringValidationResult(valid: errors.isEmpty, errors: errors, checks: checks, imageCount: count,
-            hiddenDetails: details, limitations: manifest.limitations + ["原生驗證確認結構、檔案、覆蓋引用及Q&A全文；不能單憑這些檢查證明圖像辨識完全正確或真實學習效果。", "未自動呼叫遠端Q&A來測試回答品質。"])
+            hiddenDetails: details, limitations: manifest.limitations + ["原生驗證確認結構、來源裁圖、相鄰配圖引用及Q&A全文；不能單憑這些檢查證明圖像辨識完全正確、每個語意上的圖示依賴都已標出或真實學習效果。", "區塊相鄰不保證在所有視窗尺寸都落於同一物理閱讀頁；仍須視覺核對裁圖及教學關係。", "未自動呼叫遠端Q&A來測試回答品質。"])
     }
 }

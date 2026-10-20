@@ -9,6 +9,7 @@ struct AuthoringSource: Codable {
     var kind: String
     var sha256: String
     var pages: [AuthoringPage]
+    var renderedPDFSHA256: String? = nil
 }
 struct AuthoringPage: Codable {
     var image: String
@@ -116,7 +117,7 @@ enum AuthoringMaterials {
             guard try hash(file) == source.sha256 else { throw AuthoringFailure("教材在準備後已變更，請重新加入原始教材。") }
             progress("讀取 \(source.originalName)")
             var pdf = file
-            if source.kind == "pptx" { pdf = try convertPresentation(file, root: root, runner: runner) }
+            if source.kind == "pptx" { pdf = try convertPresentation(file, root: root, runner: runner); source.renderedPDFSHA256 = try hash(pdf) }
             if ["pdf", "pptx"].contains(source.kind) {
                 guard let document = PDFDocument(url: pdf), !document.isLocked, document.pageCount > 0 else { throw AuthoringFailure("PDF 無法開啟或需要密碼：\(source.originalName)") }
                 guard document.pageCount <= 2000 else { throw AuthoringFailure("單份教材超過 2000 頁，請分開製作。") }
