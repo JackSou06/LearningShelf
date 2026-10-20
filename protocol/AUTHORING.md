@@ -161,6 +161,7 @@ UTF-8；JSON 使用嚴格語法，不含註解與尾端逗號。所有檔案引�
 - 主題 title 與非空 blocks 必填；objectives、prerequisites 選填。先備主題 ID 必須存在，不可形成依賴循環。
 - topic ID 在課程內唯一；block ID 在主題內唯一；option ID 在題目內唯一。ID 使用穩定識別，不能使用畫面頁碼。
 - 主題 blocks 陣列決定可見區塊的呈現順序；contextOnly 區塊仍屬原主題，但跳過閱讀呈現。Markdown 中的段落不是獨立可持久定位區塊；需要精確標註時分成數個有 ID 的 block。
+- 可見 Markdown 按自然段落或完整清單拆成適量、具有穩定 ID 的區塊；不要把整個章節塞進一個超長內捲區塊。閱讀器會盡量保持區塊完整，過長可能令第一頁只剩主題標題。拆分保留全文與教學覆蓋；隱藏詳述可以較長。
 - 課程可選填 scopes：`[{"id":"core","title":"本次課程"},{"id":"next","title":"後續內容"}]`，主題 scope 指向其中 ID；未定義時不顯示範圍選單。
 - 主題可選填 lead（導讀）、focus（本主題問題）、estimatedMinutes（正數）、assessment（整組題目顯示成績）、backTo（返回的 topic ID）。
 - archiveFiles：選用的 `[{"title":"原教材附錄","file":"topics/appendix.md"}]`，僅加入完整 MD，不加入每次 AI 的主題上下文。

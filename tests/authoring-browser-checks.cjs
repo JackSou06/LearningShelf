@@ -18,9 +18,15 @@ const {loadFolder} = require('../scripts/validate-course.cjs');
     await page.goto(pathToFileURL(path.resolve(__dirname, '../web/index.html')).href);
     await page.evaluate(value => LearningApp.openPack(value), pack);
     await page.waitForSelector('#reader:not([hidden])');
+    async function selectTopic(id) {
+      const button = page.locator('[data-topic="' + id + '"]');
+      const module = page.locator('details.toc-module').filter({has: button});
+      if (!await module.evaluate(element => element.open)) await module.locator('summary').click();
+      await button.click();
+    }
     let detailCount = 0;
     for (const entry of plan.topics) {
-      await page.locator('[data-topic="' + entry.id + '"]').click();
+      await selectTopic(entry.id);
       const topic = JSON.parse(fs.readFileSync(path.join(directory, entry.file)));
       const hidden = topic.blocks.filter(block => block.type === 'markdown' && block.visibility === 'contextOnly');
       for (const block of hidden) assert.equal(await page.locator('[data-block="' + block.id + '"]').count(), 0);
@@ -42,8 +48,12 @@ const {loadFolder} = require('../scripts/validate-course.cjs');
     }
     assert.deepEqual(errors, []);
     fs.mkdirSync(output, {recursive: true});
-    await page.locator('[data-topic="' + plan.topics[0].id + '"]').click();
+    await selectTopic(plan.topics[0].id);
     await page.screenshot({path: path.join(output, 'generated-course-reader.png')});
+    if (map.length) {
+      await selectTopic(map[0].topicId);
+      await page.screenshot({path: path.join(output, 'generated-course-image-topic.png')});
+    }
     const report = {passed: true, topics: plan.topics.length, images: map.length, detailCount,
       hiddenDetailsAbsentFromDOM: true, fullDetailsInActualQAPreview: true, allImagesLoaded: true, remoteQACalled: false};
     fs.writeFileSync(path.join(output, 'generated-course-browser.json'), JSON.stringify(report, null, 2) + '\n');
