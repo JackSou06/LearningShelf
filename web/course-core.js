@@ -13,7 +13,7 @@ function validateUnsafe(pack){
  function parse(p){try{const v=JSON.parse(files[p]);if(!obj(v))throw Error('必須是物件');return v;}catch(e){issue(p,'','JSON 無法解析：'+e.message,'INVALID_JSON');return {};}}
  const m=parse('course.json');
  checkKeys(m,['schemaVersion','courseId','contentVersion','title','language','audience','objectives','modules','topics','sources','scopes','archiveFiles','extensions'],'course.json','');
- if(m.schemaVersion!=='1.0')issue('course.json','/schemaVersion','目前僅支援格式 1.0','UNSUPPORTED_VERSION');
+ if(!['1.0','1.1'].includes(m.schemaVersion))issue('course.json','/schemaVersion','目前支援格式 1.0、1.1','UNSUPPORTED_VERSION');
  if(!ID.test(m.courseId||''))issue('course.json','/courseId','courseId 格式錯誤');
  for(const k of ['title','language'])if(!text(m[k]))issue('course.json','/'+k,'此欄位必填');
  if(!/^\d+\.\d+\.\d+$/.test(m.contentVersion||''))issue('course.json','/contentVersion','需要 major.minor.patch 版號');
@@ -35,9 +35,10 @@ function validateUnsafe(pack){
   if(!Array.isArray(t.blocks)||!t.blocks.length||t.blocks.length>300)issue(e.file,'/blocks','需要 1–300 個內容區塊');
   const blockIds=new Set();
   (Array.isArray(t.blocks)?t.blocks:[]).forEach((b,j)=>{const loc='/blocks/'+j;if(!obj(b)){issue(e.file,loc,'區塊需為物件');return;}if(!ID.test(b.id||'')||blockIds.has(b.id))issue(e.file,loc+'/id','區塊 ID 無效或重複');blockIds.add(b.id);if(!TYPES.includes(b.type)){issue(e.file,loc+'/type','不支援此元件：'+b.type,'UNSUPPORTED_COMPONENT');return;}
-   const fields={markdown:['file','role'],code:['language','code'],table:['columns','rows'],image:['file','alt','description'],math:['latex','description'],diagram:['layout','title','nodes','routes','segments','metrics','captionMarkdown'],singleChoice:['question','options','answerId','explanation','revisit'],reveal:['prompt','answerMarkdown'],steps:['steps','presentation','initialState'],filePosition:['initialText','maxOffset'],callCount:['bytes','buffers','initialBuffer']};
+   const fields={markdown:['file','role','visibility'],code:['language','code'],table:['columns','rows'],image:['file','alt','description'],math:['latex','description'],diagram:['layout','title','nodes','routes','segments','metrics','captionMarkdown'],singleChoice:['question','options','answerId','explanation','revisit'],reveal:['prompt','answerMarkdown'],steps:['steps','presentation','initialState'],filePosition:['initialText','maxOffset'],callCount:['bytes','buffers','initialBuffer']};
    checkKeys(b,['id','type','references','extensions',...fields[b.type]],e.file,loc);refs(b.references,e.file,loc+'/references');
    if(b.type==='markdown'){if(path(b.file,e.file,loc+'/file')){b.text=files[b.file];if(typeof b.text!=='string'||!b.text.trim())issue(e.file,loc+'/file','Markdown 內容必須非空');}}
+   if(b.type==='markdown'&&b.visibility!==undefined){if(!['visible','contextOnly'].includes(b.visibility))issue(e.file,loc+'/visibility','僅支援 visible 或 contextOnly');if(m.schemaVersion!=='1.1')issue(e.file,loc+'/visibility','visibility 需要格式 1.1','UNSUPPORTED_VERSION');}
    if(b.type==='image'){path(b.file,e.file,loc+'/file');if(!text(b.alt)||!text(b.description))issue(e.file,loc,'圖片必須提供 alt 與 description');if(!/\.(png|jpg|jpeg|webp)$/i.test(b.file||''))issue(e.file,loc+'/file','圖片需 PNG/JPEG/WebP');}
    if(b.type==='code'&&(!text(b.language)||!text(b.code)))issue(e.file,loc,'程式需 language、code');
    if(b.type==='math'&&(!text(b.latex)||!text(b.description)))issue(e.file,loc,'公式需 latex、description');
@@ -69,7 +70,8 @@ function validateUnsafe(pack){
 }
 function validate(pack){try{return validateUnsafe(pack);}catch(e){return {valid:false,course:null,warnings:[],errors:[{code:'INVALID_STRUCTURE',file:'course.json',pointer:'',message:'資料結構無效：'+e.message}]};}}
 function blockText(b){switch(b.type){case 'markdown':return b.text;case 'code':return '```'+b.language+'\n'+b.code+'\n```';case 'table':return '| '+b.columns.join(' | ')+' |\n'+b.rows.map(r=>'| '+r.join(' | ')+' |').join('\n');case 'diagram':return (b.title||'')+'\n'+(b.nodes||[]).map(n=>n.kicker+' · '+n.title+'\n'+n.detailMarkdown).join(' → ')+'\n'+(b.routes||[]).map(r=>r.label+'：'+r.nodes.join(' → ')).join('\n')+'\n'+(b.segments||[]).map(s=>s.range+'：'+s.text).join('；')+'\n'+(b.metrics||[]).map(m=>m.label+'：'+m.value).join('；')+'\n'+(b.captionMarkdown||'');case 'image':return b.alt+'\n'+b.description;case 'math':return b.latex+'\n'+b.description;case 'singleChoice':return b.question+'\n'+b.options.map(o=>o.id+': '+o.text).join('\n')+'\n答案：'+b.answerId+'\n'+b.explanation;case 'reveal':return b.prompt+'\n'+b.answerMarkdown;case 'steps':return b.steps.map(s=>s.title+'\n'+(s.code||'')+'\n'+s.bodyMarkdown+(s.snapshot?'\n狀態：'+JSON.stringify(s.snapshot):'')).join('\n\n');case 'filePosition':return '檔案定位模擬：初始 '+b.initialText+'；SEEK_SET 改位置、不改長度；write 寫 X 後位置加一，必要時延長並補零。';case 'callCount':return '理想化 read 次數（假設讀滿）：資料 '+b.bytes+' bytes；'+b.buffers.map(n=>n+' byte buffer → '+Math.ceil(b.bytes/n)+' 次').join('；');default:return '';}}
+function readingBlocks(t){return t.blocks.filter(b=>b.type!=='markdown'||b.visibility!=='contextOnly');}
 function topicText(c,t,{includeSources=true}={}){const body='# '+t.title+'\n\n'+(t.lead?t.lead+'\n\n':'')+t.blocks.map(blockText).join('\n\n');if(!includeSources)return body;const refs=t.blocks.flatMap(b=>b.references||[]),ids=new Set(refs.map(r=>r.sourceId));return body+'\n\n來源：'+JSON.stringify((c.sources||[]).filter(s=>ids.has(s.id)))+'\n定位：'+JSON.stringify(refs);}
 function context(c,t,state){return topicText(c,t,{includeSources:false})+'\n\n## 本主題筆記\n'+(state.notes[t.id]||'（尚無筆記）')+'\n\n## 本主題過往 Q&A\n'+state.qa.filter(q=>q.topic===t.id).map(q=>'Q：'+q.question+'\nA：'+(q.answer||'（沒有回答）')).join('\n\n');}
-const api={TYPES,safePath,validate,blockText,topicText,context};globalThis.CourseCore=api;if(typeof module!=='undefined')module.exports=api;
+const api={TYPES,safePath,validate,readingBlocks,blockText,topicText,context};globalThis.CourseCore=api;if(typeof module!=='undefined')module.exports=api;
 })();

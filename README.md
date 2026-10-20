@@ -241,3 +241,17 @@ python3 tests/create_course_packages.py /tmp/learningshelf-course-fixtures
 xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache -I native/CArchive native/LibraryOrganization.swift native/LibraryActions.swift native/AppStore.swift native/CourseLibrary.swift native/CourseLoader.swift native/RecordStore.swift native/MarkdownArchiveStore.swift native/KeyStore.swift native/HostSession.swift native/ShareServer.swift tests/course_library_checks.swift -framework SwiftUI -framework JavaScriptCore -framework Network -framework Security -framework PDFKit -lsqlite3 -larchive -o /tmp/learning-course-library-checks
 /tmp/learning-course-library-checks "$PWD" /tmp/learningshelf-course-fixtures
 ```
+
+## 0.2.3：供 Q&A 使用的隱藏 Markdown
+
+格式 1.1 支援 markdown 的 `visibility: "contextOnly"`。閱讀頁與閱讀搜尋排除此區塊，Q&A、上下文預覽與完整 Markdown 匯出保留全文。省略 visibility 的舊課程不受影響。含此欄位的課程必須採用 schemaVersion 1.1，以便舊 App 拒絕不支援的格式。
+
+隱藏內容驗證：`node tests/context-only-checks.cjs`。使用 `LEARNING_TEST_COURSE` 指定本次課程資料夾，設定 `LEARNING_PLAYWRIGHT_PATH` 後可執行 `node tests/context-only-browser-checks.cjs`。原生測試 `tests/context-only-native.swift` 與 CourseLoader.swift、CourseLibrary.swift 一起編譯，連結 CArchive／libarchive 與 JavaScriptCore；執行參數為專案根目錄、課程ZIP。所有測試使用隔離的暫存課程庫，不讀寫使用者紀錄。
+
+### 全自動教學優先作者包
+
+協議1.1現在預設收到教材後連續完成純教程、教學審閱與修正、保留完整內容轉製及自檢，不等待大綱、樣章或定稿批准。教學審閱與格式驗證分開；完整教學保持可見，逐圖辨識與標記稽核以contextOnly保留給Q&A。
+
+作者包來源位於 `protocol/`：`START_HERE.md`、`PROMPTS/`、`TEACHING_CHECKLIST.md`、`AGENTS.template.md` 及 `example-course/`。執行 `python3 scripts/build_author_kit.py` 可驗證範例並重建 `dist/LearningShelf-AI作者包.zip`。作者包內的AGENTS.md是供課程製作專案使用的模板，不會改變此App原始碼專案的任務。首次將作者包內容放入課程專案根目錄後，該專案即可只提供教材。
+
+0.2.3尚未包含App內上傳後呼叫Codex製課的整合；目前由外部Codex依協議生成單門課程ZIP，再匯入現有App。

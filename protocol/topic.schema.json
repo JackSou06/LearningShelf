@@ -77,6 +77,12 @@
               },
               "role": {
                 "const": "takeaway"
+              },
+              "visibility": {
+                "enum": [
+                  "visible",
+                  "contextOnly"
+                ]
               }
             },
             "required": [

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.1",
+  "courseId": "example-linear-algebra",
+  "contentVersion": "1.0.2",
+  "title": "線性代數入門",
+  "language": "zh-Hant",
+  "audience": "初學者",
+  "objectives": [
+    "解釋向量與線性組合"
+  ],
+  "modules": [
+    {
+      "id": "vectors",
+      "title": "向量與組合",
+      "topics": [
+        "vector",
+        "linear-combination"
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "id": "vector",
+      "file": "topics/vector.json"
+    },
+    {
+      "id": "linear-combination",
+      "file": "topics/linear-combination.json"
+    }
+  ],
+  "sources": [
+    {
+      "id": "author",
+      "title": "自編入門範例，用於展示通用課程格式",
+      "kind": "reference"
+    }
+  ]
+}
