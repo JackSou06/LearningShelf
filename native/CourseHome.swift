@@ -40,6 +40,8 @@ struct CourseHome: View {
             Spacer(minLength:10)
             Button(action:store.createShelfFolder) { Label("新增資料夾",systemImage:"folder.badge.plus") }
                 .disabled(!store.canOrganizeShelf || store.shelfIsTrash).help("新增資料夾 ⇧⌘N")
+            Button(action: store.showCourseAuthoring) { Label("AI 製作課程", systemImage: "sparkles") }
+                .disabled(store.isPreparingToQuit).accessibilityIdentifier("authoring-open")
             Button(action:store.chooseFolder) { Label("匯入教材",systemImage:"plus") }
                 .buttonStyle(.borderedProminent).tint(shelfGreen).disabled(store.isImporting || store.shelfIsTrash)
         }.controlSize(.large)

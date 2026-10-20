@@ -31,6 +31,8 @@ struct CatalogEntry: Codable, Identifiable {
     let library: CourseLibrary
     let session: HostSession
     let records: RecordStore
+    @Published var showsAuthoring = false
+    lazy var authoringJobs = CourseAuthoringStore(resources: resources, dataDirectory: records.folder)
     let shelfStorage: LibraryOrganizationStore
     @Published var shelf = LibraryOrganization()
     @Published var shelfLocation = "root"
@@ -206,6 +208,35 @@ struct CatalogEntry: Codable, Identifiable {
         }
         if !failures.isEmpty { error = failures.joined(separator: "\n\n") }
     }
+    func showCourseAuthoring() {
+        authoringJobs.setImporter { [weak self] url, destination in
+            guard let self else { throw AuthoringFailure("App 已關閉。") }
+            return try await self.importGeneratedCourse(url, destination: destination)
+        }
+        showsAuthoring = true
+    }
+    func handleIncomingFiles(_ urls: [URL], destinationID: String? = nil) async {
+        guard !urls.isEmpty else { return }
+        if urls.allSatisfy({ AuthoringMaterials.extensions.contains($0.pathExtension.lowercased()) }) {
+            showCourseAuthoring(); authoringJobs.create(urls, destination: destinationID ?? currentShelfFolder)
+        } else { await importItems(urls, destinationID: destinationID) }
+    }
+    func importGeneratedCourse(_ url: URL, destination: String?) async throws -> LoadedCourse {
+        guard !isImporting, !isPreparingToQuit else { throw AuthoringFailure("課程庫目前忙碌，請稍後按重試；已製作的課程會保留。") }
+        isImporting = true; importProgress = "正在驗證並加入新課程…"
+        importDestinationID = destination.flatMap { id in shelf.node(id).map { $0.kind == .folder && !$0.isTrashed ? id : "root" } }.flatMap { $0 == "root" ? nil : $0 }
+        defer { isImporting = false; importProgress = ""; importDestinationID = nil }
+        let library = library
+        let prepared = try await Task.detached { try library.prepare(url) }.value
+        defer { prepared.discard() }
+        try Task.checkCancellation()
+        let preview = try loader.load(prepared.courseRoot)
+        guard !entries.contains(where: { $0.id == preview.id }) else { throw AuthoringFailure("自動製作的新課程識別與既有課程重複，未覆蓋原教材。") }
+        guard let installed = try await installPrepared(prepared, confirmReplacement: false) else { throw AuthoringFailure("課程未成功加入書架。") }
+        importedCourseID = installed.id
+        shelfNotice = "AI 課程已製作並加入書架：" + installed.title
+        return installed
+    }
     /// Tests can confirm replacement explicitly without opening a modal window.
     func installPrepared(_ prepared: PreparedCoursePackage, confirmReplacement: Bool) async throws -> LoadedCourse? {
         let preview = try loader.load(prepared.courseRoot)
@@ -309,6 +340,7 @@ struct CatalogEntry: Codable, Identifiable {
         try session.prepareToQuit()
         try saveShelfViewState()
         server?.stop()
+        authoringJobs.shutdown()
     }
     func resumeAfterCancelledQuit() async {
         session.resumeAfterCancelledQuit()

@@ -216,7 +216,7 @@ extension AppStore {
                 } }
                 if let url, url.isFileURL { urls.append(url) }
             }
-            await importItems(urls,destinationID:destination ?? "root")
+            await handleIncomingFiles(urls, destinationID: destination ?? "root")
         }
         return true
     }

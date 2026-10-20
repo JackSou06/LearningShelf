@@ -7,7 +7,7 @@ macOS 課程庫 App，搭配可獨立使用的瀏覽器閱讀器。課程由 JSO
 - macOS：`dist/LearningShelf.app`，macOS 13 以上；安裝包為 Apple Silicon／Intel 通用版本（本機編譯，尚未公證）。
 - 瀏覽器：`dist/LearningShelf.html`，雙擊可離線閱讀；AI Q&A 需網路與使用者 API key。
 - App 主頁 →「匯入教材」，選課程 ZIP 或含 `course.json` 的資料夾；也可拖到 App。驗證成功後教材收進統一課程庫，原始 ZIP／資料夾可移動或刪除。
-- 主頁 →「更多」→「製作課程協議」，將開啟的 `AUTHORING.md` 與教材交給外部 AI，請 AI 交付一門課程的 ZIP。
+- 主頁 →「AI 製作課程」，拖入 PDF／PPTX／MD，首次設定 Codex 後，自動完成教程、審閱、轉製、驗證與匯入。也可從「更多」開啟協議，交給外部 AI 製作 ZIP。
 - 內建完整 CH3（51 主題／42 題／七組演練）與線性代數範例（2 主題）。CH3 原始來源放在該課程 sources 中。
 
 Q&A 的 AI 回答支援 Markdown 表格，含表頭、欄位對齊、行內程式碼與寬表格橫向捲動；已保存的回答會以同樣格式顯示，無需重新提問。 公式支援 `\[...\]`、`$$...$$` 區塊及 `\(...\)`、`$...$` 行內 LaTeX，使用本機公式引擎；程式碼中的公式保留原樣，無法解析時顯示原文。
@@ -115,7 +115,7 @@ xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache 
 
 未使用使用者真實 API key 發出驗證請求。實體 iPad 手勢、不同 Wi-Fi 裝置與 Intel Mac 尚需實機驗證。安裝包使用本機 ad-hoc 簽署，尚未 Apple 公證；此版可在開發用 Mac 使用。0.1.8 已加入手動檢查更新；尚未 Apple 公證，Intel Mac 與不同 macOS 版本仍需實機核對。
 
-目前保留原有電子書模式，未加入連續捲動模式、自動 OCR、雲端同步、App 內產課或任意程式外掛。課程拆分／合併尚無自動筆記定位映射；舊主題紀錄會保留。原生 PDF 使用 PDFKit，按課程提供的實際 PDF 頁序跳頁。
+目前保留原有電子書模式，未加入連續捲動模式、自動 OCR、雲端同步或任意程式外掛。0.2.4 起支援下述 App 內製課流程。課程拆分／合併尚無自動筆記定位映射；舊主題紀錄會保留。原生 PDF 使用 PDFKit，按課程提供的實際 PDF 頁序跳頁。
 
 ### 0.1.1 修正
 
@@ -255,3 +255,23 @@ xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache 
 作者包來源位於 `protocol/`：`START_HERE.md`、`PROMPTS/`、`TEACHING_CHECKLIST.md`、`AGENTS.template.md` 及 `example-course/`。執行 `python3 scripts/build_author_kit.py` 可驗證範例並重建 `dist/LearningShelf-AI作者包.zip`。作者包內的AGENTS.md是供課程製作專案使用的模板，不會改變此App原始碼專案的任務。首次將作者包內容放入課程專案根目錄後，該專案即可只提供教材。
 
 0.2.3尚未包含App內上傳後呼叫Codex製課的整合；目前由外部Codex依協議生成單門課程ZIP，再匯入現有App。
+
+## 0.2.4：App 內自動製作課程
+
+主頁的「AI 製作課程」只有一個製作頁面：拖入 PDF、PPTX、MD（可一併附 PNG／JPEG／WebP），或按「選擇教材並自動製作」。多份教材合成一門課；拖到書架資料夾也會開啟製作頁，完成後放入該資料夾。ZIP 與課程資料夾仍走原有匯入流程。
+
+首次在「首次設定與模型」選擇可用的 Codex CLI，並按「登入 Codex」完成官方瀏覽器登入。已安裝的 Codex／ChatGPT App 或 Homebrew CLI 會嘗試自動偵測；沒有時可透過頁面連結安裝。帳號登入與用量由 Codex 管理，LearningShelf 不保存登入 token，不需將 Q&A 的 API key 用於製課。製作模型從 app-server 的可用圖片模型清單取得，可自行更換。
+
+App 以官方 `codex app-server --listen stdio://` 啟動本機程序，依序執行三個回合：先寫獨立完整教程，再依教材審閱並修正，最後完整轉成協議區塊。每次工作都複製目前 App 版本內附的 AUTHORING.md 與格式定義，不用另外上傳作者包。App 更新後才會取得新版內附協議。內容階段不等待使用者確認；原生驗證失敗時最多自動修正兩次，仍失敗會停留在結果，絕不先放入書架。
+
+PDF 由 PDFKit 逐頁轉圖，保留文字層作輔助，圖片仍要求 Codex 實際逐張檢視。PPTX 優先用已安裝的 LibreOffice 轉 PDF，否則使用 Keynote；Keynote 首次可能須開啟完成設定並允許 LearningShelf 自動化控制。轉換失敗可先處理提示再按重試，或自行匯出 PDF。MD 原檔逐位元保留，同目錄內的相對圖片會一併複製；遠端、遺失、父目錄圖片不會自動下載或跨目錄讀取，須在缺口報告中明列。含影片、動畫、音效的 PPTX 目前只有靜態投影片畫面可供教學，不能宣稱動態內容已完整辨識。
+
+工作及結果放在 `~/Library/Application Support/LearningShelf/AuthoringJobs/<工作ID>/`：`originals/` 保留輸入原件，`job.json` 保存進度，`work/` 包含教程、審閱、來源清單、課程資料夾、圖片對照、驗證報告與 `LearningShelf-course.zip`。模型的可寫工作範圍是該 `work/`，網路工具關閉且不允許提升權限；來源當作教材資料，不能當作操作指令。原生 App 才能驗證並安裝課程，模型不直接寫書架或學習紀錄。這是可寫範圍限制，並非額外承諾作業系統全面禁止讀取其他檔案。
+
+製作中可取消；完成階段已保存，失敗／取消／意外中斷後可重試接續。關閉製作頁面不停止工作；退出 App 會停止目前工作，下次從紀錄重試。需要 Mac 保持開啟、Codex 可連線且帳號仍有可用用量。一次只執行一個工作。首次登入等待中可取消；完成後按「開始閱讀」開啟課程，也可查看教程與結果資料夾。
+
+原生驗證檢查 ZIP 安全、協議結構、新課程 ID、來源與定稿 SHA256、可見區塊的教程行覆蓋引用、原投影片圖檔位元一致，以及每個圖片區塊在同主題有 contextOnly 詳述，全文確實進入 `CourseCore.context`。詳述不出現在閱讀頁，也沒有展開入口。覆蓋對照只能驗證引用與覆蓋範圍，不能單獨證明轉製後語意逐句等價；內容正確性與細小標記仍依教學／視覺審閱及待核對事項判斷。未自動呼叫遠端 Q&A，因此不宣稱 AI 回答品質或真實學習效果已測試。
+
+此入口先提供新增課程，每個新工作保留一個固定 courseId，重試沿用；不會猜測要覆蓋哪門舊課。更新既有課程仍使用沿用 courseId 並提高 contentVersion 的 ZIP 匯入功能，原有筆記、問答、作答、分類及 Q&A 設定照常保留。
+
+開發驗證：`python3 scripts/check_authoring.py` 執行隔離的狀態機、取消、登入續作、斷點重試、原生修正、ZIP 與真實課程庫安裝測試（Codex 用測試替身），另檢查 PDF 轉圖與 MD 圖片保留。加 `--ui` 實際開啟原生頁面並輸出截圖。`--pptx 兩頁測試簡報.pptx` 可驗證安裝的簡報工具。明確加 `--codex /絕對路徑/codex --live-source 小型測試教材.pdf` 才會使用該帳號真正生成教程與匯入隔離課程庫；結果保存在 `dist/authoring-review/`，不碰個人書架。原有回歸仍用 `python3 scripts/check_library.py` 及 core／pagination／sync 檢查。

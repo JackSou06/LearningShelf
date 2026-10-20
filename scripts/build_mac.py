@@ -62,6 +62,7 @@ def build(output=None, test_config=None):
             'CFBundleShortVersionString': config['version'], 'CFBundleVersion': str(config['build']),
             'CFBundleIconFile': 'LearningShelf', 'LSMinimumSystemVersion': '13.0',
             'NSHighResolutionCapable': True,
+            'NSAppleEventsUsageDescription': '將你選擇的 PowerPoint 教材透過 Keynote 轉為逐頁圖片，供 AI 製作課程。',
             'NSLocalNetworkUsageDescription': '分享選定課程，讓同一網路的裝置閱讀。',
             'SUFeedURL': config['feedURL'], 'SUPublicEDKey': config['publicEDKey'],
             'SUEnableAutomaticChecks': False, 'SUAutomaticallyUpdate': False,

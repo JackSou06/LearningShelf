@@ -38,10 +38,11 @@ import UniformTypeIdentifiers
                         }
                         if let url, url.isFileURL { urls.append(url) }
                     }
-                    await store.importItems(urls)
+                    await store.handleIncomingFiles(urls)
                 }
                 return !providers.isEmpty
             }
+            .sheet(isPresented: $store.showsAuthoring) { CourseAuthoringView(store: store, authoring: store.authoringJobs) }
             .onAppear { appDelegate.store = store }
             .frame(minWidth:760,minHeight:580)
             .toolbar {
@@ -56,6 +57,7 @@ import UniformTypeIdentifiers
                 Button("匯入教材…",action:store.chooseFolder).keyboardShortcut("i",modifiers:[.command,.shift]).disabled(store.isImporting)
                 Button("開啟所選項目",action:store.openSelectedShelfItem).keyboardShortcut("o").disabled(store.selected != nil || store.shelfSelection.count != 1)
                 Button("教材主頁"){store.selected=nil}.keyboardShortcut("h",modifiers:[.command,.shift])
+                Button("AI 製作課程…", action: store.showCourseAuthoring)
                 Button("製作課程協議",action:store.authoring)
             }
             CommandGroup(replacing:.undoRedo) {
