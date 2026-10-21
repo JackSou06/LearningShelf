@@ -8,6 +8,7 @@ struct CourseAuthoringView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var dropTarget = false
     @State private var showsSetup = false
+    @State private var useExistingTutorial = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -56,6 +57,8 @@ struct CourseAuthoringView: View {
             Text(authoring.isBusy ? "正在製作課程" : "將 PDF、PPTX 或 MD 拖到這裡").font(.system(size: 16, weight: .medium))
             Text("也可附圖片；多份教材會合成一門課，不需逐步確認。")
                 .font(.system(size: 12)).foregroundColor(.secondary)
+            Toggle("沿用已完成的教程 MD（保留原文，附帶恰好一份 MD）", isOn: $useExistingTutorial)
+                .font(.system(size: 12)).toggleStyle(.checkbox).disabled(authoring.isBusy)
             Button("選擇教材並自動製作", action: chooseFiles).buttonStyle(.borderedProminent)
                 .disabled(authoring.isBusy).accessibilityIdentifier("authoring-add-files")
         }
@@ -78,7 +81,7 @@ struct CourseAuthoringView: View {
                     }
                     if let url, url.isFileURL { urls.append(url) }
                 }
-                authoring.create(urls, destination: store.currentShelfFolder)
+                authoring.create(urls, destination: store.currentShelfFolder, useExistingTutorial: useExistingTutorial)
             }
             return !providers.isEmpty
         }
@@ -137,6 +140,12 @@ struct CourseAuthoringView: View {
                     }
                 }
             }.padding(12).background(Color.gray.opacity(0.06)).cornerRadius(8)
+            if let usage = job.tokenUsage, !usage.isEmpty {
+                let input = usage.reduce(0) { $0 + $1.last.inputTokens }, cached = usage.reduce(0) { $0 + $1.last.cachedInputTokens }
+                let output = usage.reduce(0) { $0 + $1.last.outputTokens }, reasoning = usage.reduce(0) { $0 + $1.last.reasoningOutputTokens }
+                Text("已記錄用量：輸入 \(input)（含快取 \(cached)）· 輸出 \(output)（含推理 \(reasoning)）")
+                    .font(.system(size: 11)).foregroundColor(.secondary).textSelection(.enabled)
+            }
             if let error = job.error {
                 Text(error).font(.system(size: 12)).foregroundColor(.red).textSelection(.enabled)
                     .accessibilityIdentifier("authoring-error")
@@ -184,6 +193,6 @@ struct CourseAuthoringView: View {
         let panel = NSOpenPanel(); panel.allowsMultipleSelection = true; panel.canChooseDirectories = false
         panel.allowedContentTypes = AuthoringMaterials.extensions.sorted().compactMap { UTType(filenameExtension: $0) }
         panel.message = "選擇要製作成同一門課的教材；加入後會自動開始。"
-        if panel.runModal() == .OK { authoring.create(panel.urls, destination: store.currentShelfFolder) }
+        if panel.runModal() == .OK { authoring.create(panel.urls, destination: store.currentShelfFolder, useExistingTutorial: useExistingTutorial) }
     }
 }

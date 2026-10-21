@@ -27,7 +27,7 @@ def build(output=None):
     with tempfile.TemporaryDirectory(prefix='learning-author-kit-') as temporary:
         stage = Path(temporary) / 'LearningShelf-AI作者包'
         stage.mkdir()
-        for name in ['AUTHORING.md', 'README.md', 'START_HERE.md', 'TEACHING_CHECKLIST.md',
+        for name in ['AUTHORING.md', 'README.md', 'START_HERE.md', 'TEACHING_CHECKLIST.md', 'APP_PIPELINE.md',
                      'course.schema.json', 'topic.schema.json']:
             shutil.copyfile(protocol / name, stage / name)
         shutil.copyfile(protocol / 'AGENTS.template.md', stage / 'AGENTS.md')
@@ -39,6 +39,7 @@ def build(output=None):
             'schemaVersion': '1.1',
             'workflow': 'automatic tutorial, teaching review and revision, course conversion',
             'minimumApp': '0.2.3 build16',
+            'optionalCapabilities': {'imageDisplay': '0.2.4 build19', 'nativeAuthoringPlan': '0.2.4 build19'},
             'limitations': ['Example format validation does not establish teaching quality or AI answer quality.'],
         }, ensure_ascii=False, indent=2) + '\n')
         files = sorted(p for p in stage.rglob('*') if p.is_file())

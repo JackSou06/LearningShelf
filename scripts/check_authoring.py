@@ -37,6 +37,10 @@ def main():
         compile_check('inline_visual_checks', [*sources, fixture], binary)
         visuals = Path(tempfile.mkdtemp(prefix='inline-visuals-', dir=output))
         subprocess.run([str(binary), str(ROOT), str(visuals), str(materials / 'fixture.pdf')], check=True)
+        binary = scratch / 'optimization'
+        compile_check('authoring_optimization_checks', [*sources, fixture], binary)
+        optimized = Path(tempfile.mkdtemp(prefix='optimized-', dir=output))
+        subprocess.run([str(binary), str(ROOT), str(optimized), str(materials / 'fixture.pdf')], check=True)
         if args.ui:
             binary = scratch / 'ui'
             compile_check('authoring_ui_checks', [*sources, fixture, ROOT / 'native/CourseAuthoringView.swift'], binary)

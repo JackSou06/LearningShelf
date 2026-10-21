@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CORE = ['AppStore', 'LibraryOrganization', 'LibraryActions', 'CourseLibrary',
         'CourseLoader', 'RecordStore', 'MarkdownArchiveStore', 'KeyStore', 'HostSession', 'ShareServer',
-        'AuthoringMaterials', 'AuthoringVisuals', 'AuthoringValidation', 'CodexAppServer', 'CourseAuthoringStore']
+        'AuthoringMaterials', 'AuthoringRules', 'AuthoringCompiler', 'AuthoringCheckpoints', 'AuthoringVisuals', 'AuthoringValidation', 'CodexAppServer', 'CourseAuthoringStore']
 
 
 def compile_check(test, sources, binary, ui=False):

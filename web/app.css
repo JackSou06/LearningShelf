@@ -16,3 +16,18 @@
 .step-panel pre{padding:12px;margin:0 0 12px;border:1px solid var(--line);border-radius:4px;background:var(--soft)}
 .lab .step-panel .lab-note{padding:0;border:0;color:var(--ink)}
 .lab .step-panel .lab-note p,.lab .step-panel .lab-note li{font-size:var(--body-size);line-height:1.85}
+
+/* Full pixels remain available; page images share space with the explanation. */
+.lesson-block .course-image{width:var(--image-width,100%);max-width:100%;margin-top:0;margin-bottom:0}
+.course-image.image-align-left{margin-left:0;margin-right:auto;text-align:left}
+.course-image.image-align-center{margin-left:auto;margin-right:auto;text-align:center}
+.course-image.image-align-right{margin-left:auto;margin-right:0;text-align:right}
+.course-image .image-enlarge{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:inherit;cursor:zoom-in;line-height:0;box-shadow:none}
+.course-image .image-enlarge img{width:auto;height:auto;max-width:100%;max-height:min(var(--image-max-height,360px),calc(var(--sheet-height) * .48));object-fit:contain}
+.course-image figcaption{line-height:1.5;margin-top:6px;text-align:inherit}
+.image-enlarge:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.image-preview{width:92vw;max-width:1400px;max-height:92dvh;padding:18px;overflow:auto}
+.image-preview form{position:sticky;top:0;display:flex;justify-content:flex-end;z-index:1}
+.image-preview-caption{font-size:14px;line-height:1.6;margin:8px 0}
+.image-preview-scroll{overflow:auto;max-height:72dvh}
+.image-preview-scroll img{display:block;max-width:none;max-height:none;width:auto;height:auto}

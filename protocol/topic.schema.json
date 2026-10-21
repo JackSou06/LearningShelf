@@ -202,6 +202,29 @@
               "description": {
                 "type": "string",
                 "minLength": 1
+              },
+              "display": {
+                "type": "object",
+                "properties": {
+                  "widthPercent": {
+                    "type": "number",
+                    "minimum": 20,
+                    "maximum": 100
+                  },
+                  "maxHeight": {
+                    "type": "number",
+                    "minimum": 120,
+                    "maximum": 800
+                  },
+                  "align": {
+                    "enum": [
+                      "left",
+                      "center",
+                      "right"
+                    ]
+                  }
+                },
+                "additionalProperties": false
               }
             },
             "required": [
