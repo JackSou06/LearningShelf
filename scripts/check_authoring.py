@@ -41,6 +41,10 @@ def main():
         compile_check('authoring_optimization_checks', [*sources, fixture], binary)
         optimized = Path(tempfile.mkdtemp(prefix='optimized-', dir=output))
         subprocess.run([str(binary), str(ROOT), str(optimized), str(materials / 'fixture.pdf')], check=True)
+        binary = scratch / 'capacity'
+        compile_check('course_capacity_checks', sources, binary)
+        capacity = Path(tempfile.mkdtemp(prefix='capacity-', dir=output))
+        subprocess.run([str(binary), str(ROOT), str(capacity)], check=True)
         if args.ui:
             binary = scratch / 'ui'
             compile_check('authoring_ui_checks', [*sources, fixture, ROOT / 'native/CourseAuthoringView.swift'], binary)

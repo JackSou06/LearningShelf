@@ -132,7 +132,7 @@ enum AuthoringVisuals {
             entry["file"] = file
             let (data, preview) = try render(entry, job: job, manifest: manifest)
             bytes += data.count
-            guard bytes <= 20_000_000 else { throw AuthoringFailure("本次裁圖合計超過閱讀器 20 MB 載入限制；請調整配圖或分開製作，不能刪去教學規避限制。") }
+            guard bytes <= CourseLoader.maximumContentBytes else { throw AuthoringFailure("本次裁圖合計超過閱讀器 100 MB 載入限制；請調整配圖或分開製作，不能刪去教學規避限制。") }
             try FileManager.default.createDirectory(at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
             try data.write(to: try safeURL(file, under: root), options: .atomic)
             crops.append(preview)

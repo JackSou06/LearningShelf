@@ -16,6 +16,7 @@ struct LoadedCourse {
     var topicCount: Int { (model["topics"] as? [[String: Any]])?.count ?? 0 }
 }
 final class CourseLoader {
+    static let maximumContentBytes = 100_000_000
     let context: JSContext
     init(webRoot: URL) throws {
         guard let context = JSContext() else { throw CourseFailure(message: "無法啟動格式驗證器") }
@@ -48,7 +49,7 @@ final class CourseLoader {
             let ext = u.pathExtension.lowercased()
             if ["json", "md", "png", "jpg", "jpeg", "webp"].contains(ext) {
                 total += values.fileSize ?? 0
-                guard total <= 20_000_000 else { throw CourseFailure(message: "課程文字與圖片超過 20 MB") }
+                guard total <= Self.maximumContentBytes else { throw CourseFailure(message: "課程文字與圖片超過 100 MB") }
                 let data = try Data(contentsOf: u)
                 if ["json", "md"].contains(ext) { files[path] = String(data: data, encoding: .utf8); guard files[path] != nil else { throw CourseFailure(message: "需使用 UTF-8：\(path)") } }
                 else { assets[path] = "data:image/\(ext == "jpg" ? "jpeg" : ext);base64," + data.base64EncodedString() }

@@ -39,7 +39,7 @@ def build(output=None):
             'schemaVersion': '1.1',
             'workflow': 'automatic tutorial, teaching review and revision, course conversion',
             'minimumApp': '0.2.3 build16',
-            'optionalCapabilities': {'imageDisplay': '0.2.4 build19', 'nativeAuthoringPlan': '0.2.4 build19'},
+            'optionalCapabilities': {'imageDisplay': '0.2.4 build19', 'nativeAuthoringPlan': '0.2.4 build19', 'largeCourseContent': '0.2.4 build20'},
             'limitations': ['Example format validation does not establish teaching quality or AI answer quality.'],
         }, ensure_ascii=False, indent=2) + '\n')
         files = sorted(p for p in stage.rglob('*') if p.is_file())

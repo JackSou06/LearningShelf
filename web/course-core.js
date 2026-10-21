@@ -1,5 +1,6 @@
 /* Pure course protocol validator, used by macOS JavaScriptCore and browsers. */
 (function(){'use strict';
+const MAX_CONTENT_BYTES=100000000;
 const TYPES=['markdown','code','table','image','math','diagram','singleChoice','reveal','steps','filePosition','callCount'];
 const ID=/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
@@ -74,5 +75,5 @@ function blockText(b){switch(b.type){case 'markdown':return b.text;case 'code':r
 function readingBlocks(t){return t.blocks.filter(b=>b.type!=='markdown'||b.visibility!=='contextOnly');}
 function topicText(c,t,{includeSources=true}={}){const body='# '+t.title+'\n\n'+(t.lead?t.lead+'\n\n':'')+t.blocks.map(blockText).join('\n\n');if(!includeSources)return body;const refs=t.blocks.flatMap(b=>b.references||[]),ids=new Set(refs.map(r=>r.sourceId));return body+'\n\n來源：'+JSON.stringify((c.sources||[]).filter(s=>ids.has(s.id)))+'\n定位：'+JSON.stringify(refs);}
 function context(c,t,state){return topicText(c,t,{includeSources:false})+'\n\n## 本主題筆記\n'+(state.notes[t.id]||'（尚無筆記）')+'\n\n## 本主題過往 Q&A\n'+state.qa.filter(q=>q.topic===t.id).map(q=>'Q：'+q.question+'\nA：'+(q.answer||'（沒有回答）')).join('\n\n');}
-const api={TYPES,safePath,validate,readingBlocks,blockText,topicText,context};globalThis.CourseCore=api;if(typeof module!=='undefined')module.exports=api;
+const api={MAX_CONTENT_BYTES,TYPES,safePath,validate,readingBlocks,blockText,topicText,context};globalThis.CourseCore=api;if(typeof module!=='undefined')module.exports=api;
 })();
