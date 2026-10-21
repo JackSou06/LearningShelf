@@ -32,6 +32,7 @@ class ReleaseChecks(unittest.TestCase):
                 file.write_bytes(('fixture-' + file.name).encode())
             assets = {file.name: file for file in [app, kit, sums]}
             events = []
+            uploaded = []
 
             class FakeGitHub:
                 def __init__(self, repository):
@@ -39,6 +40,8 @@ class ReleaseChecks(unittest.TestCase):
 
                 def request(self, route, method='GET', payload=None, file=None, **kwargs):
                     if method == 'GET':
+                        if 'published' in events:
+                            return {'id': 1, 'assets': uploaded, 'draft': False}
                         return None
                     if route == '/releases' and method == 'POST':
                         events.append('draft')
@@ -47,9 +50,11 @@ class ReleaseChecks(unittest.TestCase):
                         events.append('published')
                         return {}
                     events.append('upload:' + file.name)
-                    return {'name': file.name, 'size': file.stat().st_size,
-                            'digest': 'sha256:' + ('wrong' if corrupt and file == kit else release.digest(file)),
-                            'browser_download_url': 'https://example.invalid/' + file.name}
+                    asset = {'name': file.name, 'size': file.stat().st_size,
+                             'digest': 'sha256:' + ('wrong' if corrupt and file == kit else release.digest(file)),
+                             'browser_download_url': 'https://example.invalid/' + file.name}
+                    uploaded.append(asset.copy())
+                    return {**asset, 'browser_download_url': 'https://example.invalid/untagged-draft/' + file.name}
 
             def fake_run(*args, **kwargs):
                 if args[:3] == ('git', 'status', '--porcelain'):
@@ -60,6 +65,7 @@ class ReleaseChecks(unittest.TestCase):
                     return 'fixture-source'
                 if args[0] == 'curl':
                     self.assertIn('published', events)
+                    self.assertNotIn('untagged-draft', args[-3])
                     self.assertEqual(destination.read_bytes(), old)
                     name = args[-3].rsplit('/', 1)[-1]
                     Path(args[-1]).write_bytes(assets[name].read_bytes())

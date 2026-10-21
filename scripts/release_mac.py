@@ -170,9 +170,16 @@ def publish(config, archive, feed, notes, extra_assets=()):
             asset = github.request('/releases/' + str(release['id']) + '/assets?' + urlencode({'name': path.name}), 'POST', file=path)
         if asset['size'] != path.stat().st_size or asset.get('digest') != 'sha256:' + digest(path):
             raise RuntimeError('Uploaded asset checksum differs; refusing to publish the update feed: ' + path.name)
+        if asset['name'] != path.name:
+            raise RuntimeError('GitHub normalized the asset filename; use an ASCII filename: ' + path.name)
         uploaded[path.name] = asset
     if release['draft']:
         github.request('/releases/' + str(release['id']), 'PATCH', {'draft': False, 'make_latest': 'true'})
+    # Draft asset URLs may contain an untagged-* placeholder. Publication replaces those URLs.
+    release = github.request('/releases/tags/' + tag)
+    uploaded = {asset['name']: asset for asset in release['assets']}
+    if release['draft'] or any(path.name not in uploaded or uploaded[path.name].get('digest') != 'sha256:' + digest(path) for path in assets):
+        raise RuntimeError('Published asset metadata differs; feed has not been published')
     # A successful anonymous download must precede publishing any update metadata.
     with tempfile.TemporaryDirectory(prefix='learning-download-') as temp:
         for path in assets:
