@@ -5,6 +5,7 @@ import base64
 import hashlib
 import html
 import json
+import mimetypes
 import os
 import plistlib
 import re
@@ -87,7 +88,7 @@ class GitHub:
                 headers.append('Content-Type: application/json')
             if file:
                 args += ['--data-binary', '@' + str(file)]
-                headers.append('Content-Type: application/zip')
+                headers.append('Content-Type: ' + (mimetypes.guess_type(str(file))[0] or 'application/octet-stream'))
             config = ''.join('header = ' + json.dumps(h) + '\n' for h in headers)
             output = run(*args, input=config)
             body, code = output.rsplit('\n', 1)
@@ -133,10 +134,13 @@ def prepare(skip_build=False):
     return config, archive, feed, notes
 
 
-def publish(config, archive, feed, notes):
+def publish(config, archive, feed, notes, extra_assets=()):
     # The app source must already have been committed. The feed is committed only after the asset is live.
     if run('git', 'status', '--porcelain', cwd=ROOT):
         raise RuntimeError('Commit project changes before --publish')
+    assets = [archive, *map(Path, extra_assets)]
+    if len({path.name for path in assets}) != len(assets) or any(not path.is_file() or path.is_symlink() for path in assets):
+        raise RuntimeError('Release assets must be existing regular files with unique names')
     previous_feed = ROOT / 'updates/appcast.xml'
     if previous_feed.exists():
         previous = ET.parse(previous_feed)
@@ -158,22 +162,27 @@ def publish(config, archive, feed, notes):
                                  'draft': True, 'prerelease': False})
     elif release['target_commitish'] != source:
         raise RuntimeError('This version already belongs to another commit. Increase version/build before publishing.')
-    asset = next((a for a in release['assets'] if a['name'] == archive.name), None)
-    if asset is None:
-        asset = github.request('/releases/' + str(release['id']) + '/assets?name=' + archive.name, 'POST', file=archive)
-    if asset['size'] != archive.stat().st_size or asset.get('digest') != 'sha256:' + digest(archive):
-        raise RuntimeError('Uploaded asset checksum differs; refusing to publish the update feed')
+    uploaded = {}
+    for path in assets:
+        asset = next((a for a in release['assets'] if a['name'] == path.name), None)
+        if asset is None:
+            from urllib.parse import urlencode
+            asset = github.request('/releases/' + str(release['id']) + '/assets?' + urlencode({'name': path.name}), 'POST', file=path)
+        if asset['size'] != path.stat().st_size or asset.get('digest') != 'sha256:' + digest(path):
+            raise RuntimeError('Uploaded asset checksum differs; refusing to publish the update feed: ' + path.name)
+        uploaded[path.name] = asset
     if release['draft']:
         github.request('/releases/' + str(release['id']), 'PATCH', {'draft': False, 'make_latest': 'true'})
     # A successful anonymous download must precede publishing any update metadata.
     with tempfile.TemporaryDirectory(prefix='learning-download-') as temp:
-        downloaded = Path(temp) / archive.name
-        # Newly published release assets can briefly return 404 before GitHub's edge is ready.
-        run('curl', '-fL', '--retry', '5', '--retry-all-errors', '--retry-delay', '3',
-            '--connect-timeout', '20', '--max-time', '900',
-            asset['browser_download_url'], '-o', downloaded)
-        if digest(downloaded) != digest(archive):
-            raise RuntimeError('Public download checksum differs; feed has not been published')
+        for path in assets:
+            downloaded = Path(temp) / path.name
+            # Newly published assets can briefly return 404 before GitHub's edge is ready.
+            run('curl', '-fL', '--retry', '5', '--retry-all-errors', '--retry-delay', '3',
+                '--connect-timeout', '20', '--max-time', '900',
+                uploaded[path.name]['browser_download_url'], '-o', downloaded)
+            if digest(downloaded) != digest(path):
+                raise RuntimeError('Public download checksum differs; feed has not been published: ' + path.name)
     destination = ROOT / 'updates/appcast.xml'
     destination.write_bytes(feed.read_bytes())
     run('git', 'add', 'updates/appcast.xml', cwd=ROOT)
@@ -187,10 +196,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--skip-build', action='store_true', help='Use the already-built production app')
     parser.add_argument('--publish', action='store_true', help='Upload a GitHub release and commit/push its signed feed')
+    parser.add_argument('--asset', action='append', default=[], type=Path, help='Additional release asset; repeat for author kit and checksums')
     args = parser.parse_args()
     result = prepare(args.skip_build)
     if args.publish:
-        publish(*result)
+        publish(*result, extra_assets=args.asset)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-# App 內建製課流程（0.2.4 build 19）
+# App 內建製課流程（0.3.0）
 
 App 使用與作者包相同的 AUTHORING.md 與 Schema，自動按階段建立 rules/tutorial.md、review.md、conversion.md、visual.md、repair.md。完整協議仍可按疑點查閱；純教程階段不要求閱讀全部 JSON／交付規則。不是刪除教學要求，也不以壓縮教學內容節省用量。
 
@@ -32,6 +32,6 @@ App 保存 app-server 的 thread/tokenUsage/updated，按工作階段記錄輸�
 
 課程內的 NATIVE_VALIDATION.md 由 App 產生檔案清單、每圖與詳細 MD 對照、原生檢查與限制；逐項標記辨識仍以圖片的完整 MD 為準。原生報告不得冒稱已執行遠端 Q&A 回答或已證明學習效果。
 
-## 容量（build 20 起）
+## 容量（0.3.0）
 
 載入的 JSON、Markdown 與圖片合計上限提高至100 MB；ZIP 及解壓總量各維持200 MB，單份轉製計畫／裁圖對照 JSON 的既有20 MB保護不變。舊工作在「製作紀錄」選取原課程並按「重試並接續」，已完成的教程、審閱及轉製階段會跳過，接續驗證及匯入，不必重新加入教材。

@@ -2,6 +2,10 @@
 
 macOS 課程庫 App，搭配可獨立使用的瀏覽器閱讀器。課程由 JSON／Markdown 組成，新增教材不需改閱讀器。個人紀錄與教材分開。
 
+## 目前正式版：0.3.0
+
+[GitHub Release／下載與完整更新說明](https://github.com/JackSou06/LearningShelf/releases/tag/v0.3.0)。本版整合 App 內 Codex 自動製課、階段規則與原生工具、就近配圖與圖片版面、100 MB 課程、失敗續作、ChatGPT 帳號 Q&A 與金鑰持久保存。0.2.4 build17–21 為開發期間建置，功能統一以 0.3.0 build22 正式發行。
+
 ## 開啟
 
 - macOS：`dist/LearningShelf.app`，macOS 13 以上；安裝包為 Apple Silicon／Intel 通用版本（本機編譯，尚未公證）。
@@ -122,7 +126,7 @@ xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache 
 
 未使用使用者真實 API key 發出驗證請求。實體 iPad 手勢、不同 Wi-Fi 裝置與 Intel Mac 尚需實機驗證。安裝包使用本機 ad-hoc 簽署，尚未 Apple 公證；此版可在開發用 Mac 使用。0.1.8 已加入手動檢查更新；尚未 Apple 公證，Intel Mac 與不同 macOS 版本仍需實機核對。
 
-目前保留原有電子書模式，未加入連續捲動模式、自動 OCR、雲端同步或任意程式外掛。0.2.4 起支援下述 App 內製課流程。課程拆分／合併尚無自動筆記定位映射；舊主題紀錄會保留。原生 PDF 使用 PDFKit，按課程提供的實際 PDF 頁序跳頁。
+目前保留原有電子書模式，未加入連續捲動模式、自動 OCR、雲端同步或任意程式外掛。0.3.0 正式提供下述 App 內製課流程。課程拆分／合併尚無自動筆記定位映射；舊主題紀錄會保留。原生 PDF 使用 PDFKit，按課程提供的實際 PDF 頁序跳頁。
 
 ### 0.1.1 修正
 
@@ -263,11 +267,11 @@ xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache 
 
 0.2.3尚未包含App內上傳後呼叫Codex製課的整合；目前由外部Codex依協議生成單門課程ZIP，再匯入現有App。
 
-## 0.2.4：App 內自動製作課程
+## 0.3.0：App 內自動製作課程
 
 主頁的「AI 製作課程」只有一個製作頁面：拖入 PDF、PPTX、MD（可一併附 PNG／JPEG／WebP），或按「選擇教材並自動製作」。多份教材合成一門課；拖到書架資料夾也會開啟製作頁，完成後放入該資料夾。ZIP 與課程資料夾仍走原有匯入流程。
 
-首次在「首次設定與模型」選擇可用的 Codex CLI，並按「登入 Codex」完成官方瀏覽器登入。已安裝的 Codex／ChatGPT App 或 Homebrew CLI 會嘗試自動偵測；沒有時可透過頁面連結安裝。帳號登入與用量由 Codex 管理，LearningShelf 不保存登入 token，不需將 Q&A 的 API key 用於製課。製作模型從 app-server 的可用圖片模型清單取得，可自行更換。
+首次在「首次設定與模型」選擇可用的 Codex CLI，並按「登入 Codex」完成官方瀏覽器登入。已安裝的 Codex／ChatGPT App 或 Homebrew CLI 會嘗試自動偵測；沒有時可透過頁面連結安裝。製課帳號登入與用量由 Codex 管理，LearningShelf 不複製 Codex 登入 token，不需將 Q&A 的 API key 用於製課；Q&A 的 ChatGPT 授權另存於原生私人設定。製作模型從 app-server 的可用圖片模型清單取得，可自行更換。
 
 App 以官方 `codex app-server --listen stdio://` 啟動本機程序，依序執行三個主要階段：先寫獨立完整教程，再依教材審閱並修正，最後完整轉成協議區塊。有來源裁圖時會額外自動核對最終圖片。每次工作都複製目前 App 版本內附的 AUTHORING.md 與格式定義，不用另外上傳作者包。App 更新後才會取得新版內附協議。內容階段不等待使用者確認；原生驗證失敗時最多自動修正兩次，仍失敗會停留在結果，絕不先放入書架。
 
@@ -283,7 +287,7 @@ PDF 由 PDFKit 逐頁轉圖，保留文字層作輔助，圖片仍要求 Codex �
 
 開發驗證：`python3 scripts/check_authoring.py` 執行隔離的狀態機、取消、登入續作、斷點重試、原生修正、ZIP 與真實課程庫安裝測試（Codex 用測試替身），另檢查 PDF 轉圖與 MD 圖片保留。加 `--ui` 實際開啟原生頁面並輸出截圖。`--pptx 兩頁測試簡報.pptx` 可驗證安裝的簡報工具。明確加 `--codex /絕對路徑/codex --live-source 小型測試教材.pdf` 才會使用該帳號真正生成教程與匯入隔離課程庫；結果保存在 `dist/authoring-review/`，不碰個人書架。原有回歸仍用 `python3 scripts/check_library.py` 及 core／pagination／sync 檢查。
 
-### 就近配圖與原頁裁圖（0.2.4 build 18）
+### 就近配圖與原頁裁圖（0.3.0）
 
 製作規則要求第一次解釋來源圖例、表格、程式或標記時，就在該段前後放圖，不把必要圖示一律留到主題末尾。純文字可直接引用；有多個區域或整頁縮小難讀時，才選有用的局部。完整原件與來源頁仍保留，不用局部裁圖取代它們。
 
