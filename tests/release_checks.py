@@ -1,6 +1,7 @@
 """No network or credentials: assert release integrity gates before publishing the feed."""
 import hashlib
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -12,6 +13,10 @@ import release_mac as release
 
 
 class ReleaseChecks(unittest.TestCase):
+    def test_empty_success_response(self):
+        with patch.dict(os.environ, {'GH_TOKEN': 'fixture-not-a-token'}), patch.object(release, 'run', return_value='204'):
+            self.assertEqual(release.GitHub('example/repo').request('/releases/assets/1', 'DELETE'), {})
+
     def test_all_assets_verified_before_feed(self):
         self.exercise(corrupt=False)
 

@@ -91,7 +91,7 @@ class GitHub:
                 headers.append('Content-Type: ' + (mimetypes.guess_type(str(file))[0] or 'application/octet-stream'))
             config = ''.join('header = ' + json.dumps(h) + '\n' for h in headers)
             output = run(*args, input=config)
-            body, code = output.rsplit('\n', 1)
+            body, code = output.rsplit('\n', 1) if '\n' in output else ('', output)
             if code == '404' and allow_missing:
                 return None
             data = json.loads(body) if body else {}
