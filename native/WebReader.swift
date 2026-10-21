@@ -50,8 +50,23 @@ struct WebReader: NSViewRepresentable {
                 let record = try store.session.load(course)
                 let pack = try JSONSerialization.data(withJSONObject: course.pack), state = try JSONSerialization.data(withJSONObject: record)
                 let p = String(data: pack, encoding: .utf8)!, r = String(data: state, encoding: .utf8)!
-                web?.evaluateJavaScript("LearningApp.openPack(\(p),\(r))", completionHandler: nil);reply(id,value:["remembered":KeyStore.exists()])
-            case "sessionInfo": reply(id,value:["courseId":course.id,"hasKey":store.session.hasKey])
+                web?.evaluateJavaScript("LearningApp.openPack(\(p),\(r))", completionHandler: nil);reply(id,value:store.session.connectionInfo())
+            case "sessionInfo": reply(id,value:store.session.connectionInfo())
+            case "setAIProvider": try store.aiConnection.setProvider(data["provider"] as? String ?? ""); reply(id,value:store.session.connectionInfo())
+            case "chatGPTCancelLogin": store.aiConnection.cancelLogin(); reply(id,value:store.session.connectionInfo())
+            case "chatGPTSelect": try store.aiConnection.selectProfile(data["profileID"] as? String ?? ""); reply(id,value:store.session.connectionInfo())
+            case "chatGPTModel": try store.aiConnection.selectModel(data["model"] as? String ?? ""); reply(id,value:store.session.connectionInfo())
+            case "chatGPTLogin", "chatGPTModels", "chatGPTLogout":
+                if action == "chatGPTLogout", store.session.hasActiveRequests { throw CourseFailure(message: "請先等待或取消正在進行的 Q&A，再登出") }
+                Task { @MainActor in
+                    do {
+                        if action == "chatGPTLogin" { try await store.aiConnection.login(profileID: data["profileID"] as? String) }
+                        else if action == "chatGPTLogout" { try await store.aiConnection.logout() }
+                        else { try await store.aiConnection.models() }
+                        self.reply(id,value:self.store.session.connectionInfo())
+                    } catch is CancellationError { self.reply(id,error:"操作已取消") }
+                    catch { self.reply(id,error:error.localizedDescription) }
+                }
             case "loadRecords": guard data["courseId"] as? String == course.id else { throw CourseFailure(message: "課程不符") };reply(id,value:try store.session.load(course))
             case "saveRecords": guard let r = data["record"] as? [String: Any], let base = data["base"] as? [String: Any] else { throw CourseFailure(message: "同步格式錯誤") }; reply(id,value:try store.session.save(r,base:base,course:course))
             case "mdStatus": reply(id,value:"MD 自動保存："+(try markdown.target(course.id)).path)
@@ -61,8 +76,8 @@ struct WebReader: NSViewRepresentable {
             case "home": store.selected=nil;reply(id)
             case "openFolder": store.chooseFolder();reply(id)
             case "authoring": store.authoring();reply(id)
-            case "setKey": let supplied = data["key"] as? String ?? ""; if !supplied.isEmpty { store.session.temporaryKey = supplied }; if data["remember"] as? Bool == true { if !store.session.temporaryKey.isEmpty { try KeyStore.save(store.session.temporaryKey) } } else { if store.session.temporaryKey.isEmpty { store.session.temporaryKey = KeyStore.load() ?? "" };KeyStore.clear() };reply(id)
-            case "forgetKey": store.session.temporaryKey="";KeyStore.clear();reply(id)
+            case "setKey": try store.session.setKey(data["key"] as? String ?? "",remember:data["remember"] as? Bool ?? true);reply(id,value:store.session.connectionInfo())
+            case "forgetKey": try store.session.forgetKey();reply(id,value:store.session.connectionInfo())
             case "copy": NSPasteboard.general.clearContents();NSPasteboard.general.setString(data["text"] as? String ?? "",forType:.string);reply(id)
             case "export": let panel=NSSavePanel();panel.nameFieldStringValue=data["name"] as? String ?? "records.json";if panel.runModal() == .OK,let u=panel.url{try (data["text"] as? String ?? "").write(to:u,atomically:true,encoding:.utf8)};reply(id)
             case "import": let panel=NSOpenPanel();panel.allowedContentTypes=[.json];if panel.runModal() == .OK,let u=panel.url {let size=try u.resourceValues(forKeys:[.fileSizeKey]).fileSize ?? 0;guard size<=10_000_000 else{throw CourseFailure(message:"備份超過 10 MB")};reply(id,value:try String(contentsOf:u,encoding:.utf8))}else{reply(id)}

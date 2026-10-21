@@ -98,7 +98,7 @@ final class ShareServer {
         do {
             var value: Any
             switch (method, route) {
-            case ("GET", "api/session"): value = ["courseId": course.id, "hasKey": session.hasKey]
+            case ("GET", "api/session"): value = ["courseId": course.id, "hasKey": session.hasKey, "ready": session.aiReady, "provider": session.aiConnection?.configuration.provider ?? "api", "model": session.aiConnection?.usesChatGPT == true ? session.aiConnection!.configuration.chatGPTModel : ""]
             case ("GET", "api/records"): value = try session.load(course)
             case ("POST", "api/records"):
                 guard let record = payload["record"] as? [String: Any], let base = payload["base"] as? [String: Any] else { throw CourseFailure(message: "紀錄同步格式錯誤") }

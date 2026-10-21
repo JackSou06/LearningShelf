@@ -48,17 +48,22 @@ Mac 紀錄以 SQLite 存在 `~/Library/Application Support/LearningShelf/`，課
 
 「紀錄」可匯出 JSON、完整課程與個人紀錄 MD，也可合併匯入 JSON。Q&A 依 ID 去重、衝突筆記一併保留。CH3 可直接匯入原講義的進度 JSON。未再出現的主題紀錄仍保留於匯出中。
 
-AI 設定使用 OpenAI Responses API；模型可改。Mac 可由使用者勾選保存於 Keychain，未勾選則只記本次 App 執行期間；瀏覽器只保存在記憶體。API key 不進教材、備份或平板；分享模式由 Mac 代送請求。傳送範圍為目前主題教材、該主題全部 Q&A、筆記與新問題；不暗中截斷。API 回報的 Input／Output 用量顯示在回答下方。參考：[OpenAI Docs](https://developers.openai.com/api/docs/guides/text)。
+Mac 的「AI 設定」提供 **ChatGPT 帳號** 與 **API Key**，均使用官方 Responses API。選 ChatGPT 帳號後按 **Continue with ChatGPT**，在系統瀏覽器授權使用方案；App 顯示該帳號實際可用的模型，支援多個帳號／工作區、重新登入、取消及登出。方案資格、模型與額度由 OpenAI 決定，目前官方流程對符合資格的 Plus／Pro 帳號開放；額度不足不會自動改用 API Key。可從設定前往 ChatGPT 使用量頁管理授權。這與製作課程的 Codex CLI 登入各自獨立。
+
+API Key 預設保存在此 Mac，空白保存會沿用原金鑰，取消勾選只讓新金鑰暫時使用，只有「清除金鑰」會刪除。設定固定存於 `~/Library/Application Support/LearningShelf/Credentials/`，不隨 App 安裝路徑或更新變動；目錄權限 0700、憑證檔 0600，使用原子替換。可讀取的舊版 Keychain 金鑰會遷移；若 macOS 要求授權或讀取失敗會明示，原資料不會被當作空白刪除。瀏覽器獨立 HTML 維持僅本次記憶體 API Key。
+
+金鑰與登入權杖不進教材、學習紀錄備份、WebView、平板或 AI 提示；分享模式由 Mac 代送請求。兩種方式的傳送範圍相同：目前主題完整教材（含隱藏 MD 詳述）、該主題全部 Q&A、筆記與新問題，不暗中截斷。回應用量仍顯示在回答下方。參考：[官方登入與方案使用文件](https://developers.openai.com/siwc/token-sharing-open-source/sign-in)、[模型與 Responses 串流](https://developers.openai.com/siwc/token-sharing-open-source/models-and-inference)。
+
 
 ## 平板與區網分享
 
 App 開啟課程後點視窗上方「分享到平板」，將顯示的區網網址貼到同一網路的平板／瀏覽器。平板是電腦所選課程的操作畫面，筆記、Q&A、草稿、作答與複習標記均由 Mac 的同一份紀錄保存，兩邊開著時約每秒更新。翻頁時各自維持目前畫面，不會因另一端操作被突然跳頁。
 
-先在 Mac 的「API 設定」填寫金鑰；已存於此 Mac Keychain 的金鑰會直接使用。平板不需填 API key，問題交給 Mac 依最新的當前主題教材、筆記與歷史 Q&A 建立請求。金鑰只存在 Mac，平板取得問題狀態與回答；模型設定也沿用 Mac。已送達 Mac 的問題由 Mac 完成並寫入 SQLite 與完整 MD，平板重新整理或關閉不會丟掉這筆問答。兩端都可以取消或刪除問答，刪除標記仍阻止舊畫面／備份把問答加回。
+先在 Mac 的「AI 設定」登入 ChatGPT，或填寫 API Key。平板不需登入或填 API key，問題交給 Mac 依最新的當前主題教材、筆記與歷史 Q&A 建立請求。金鑰只存在 Mac，平板取得問題狀態與回答；模型設定也沿用 Mac。已送達 Mac 的問題由 Mac 完成並寫入 SQLite 與完整 MD，平板重新整理或關閉不會丟掉這筆問答。兩端都可以取消或刪除問答，刪除標記仍阻止舊畫面／備份把問答加回。
 
 一般瀏覽器離線 HTML 仍使用自己的紀錄與 API 設定。分享模式不在平板 localStorage 保存筆記、Q&A 或 MD；更新只在 Mac 確認保存後顯示「已同步電腦」。同一筆記同時被不同畫面修改時會保留兩段內容並標示待核對，其他主題的修改不互相覆蓋。失去 Mac 連線時會顯示未連線／尚未同步，保留畫面中尚未送達的修改並於連線恢復後重試；這時請先等待同步完成再重新整理或關閉平板頁面。
 
-此分享網址可讀寫選定課程的個人紀錄及使用此 Mac 的 API。靜態教材不包含原始 PDF／來源檔，也不提供任意檔案或金鑰讀取服務。
+此分享網址可讀寫選定課程的個人紀錄及使用此 Mac 選定的 AI 連線。靜態教材不包含原始 PDF／來源檔，也不提供任意檔案或金鑰讀取服務。
 
 可隨時停止；切回主頁、切換課程或離開 App 會停止分享。Mac 睡眠、離線或防火牆封鎖時無法連線。分享網址含本次工作階段隨機路徑，重開分享後需用新的網址。
 
@@ -68,6 +73,8 @@ App 開啟課程後點視窗上方「分享到平板」，將顯示的區網網�
 - `courses/`：可直接交給 App 開啟的課程資料夾。
 - `web/course-core.js`：純資料驗證、通用主題模型與 AI 上下文；Mac 與瀏覽器共用。
 - `web/records.js`：紀錄格式、衝突合併、原 CH3 備份遷移。
+- `web/ai-settings.js`：ChatGPT／API Key 連線選擇、登入與模型介面。
+- `native/AIConnection.swift`、`AICredentials.swift`、`OAuthLoopback.swift`：官方 OAuth、ID token 驗證、私人憑證、模型、更新／撤銷與 Responses 串流。
 - `web/reader.js`：閱讀與內容元件、測驗、筆記與問答 UI。
 - `web/pagination.js`：分頁、觸控與觸控板手勢。
 - `web/platform.js`：瀏覽器／原生檔案、保存與網路介面。
@@ -101,7 +108,7 @@ macOS 圖示使用 `resources/learningShelf_icon_macos.png`：外圍透明、圓
 ```sh
 xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache native/CourseLoader.swift native/RecordStore.swift native/MarkdownArchiveStore.swift tests/native_checks.swift -framework JavaScriptCore -framework PDFKit -lsqlite3 -o /tmp/learning-native-checks
 /tmp/learning-native-checks "$PWD"
-xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache native/CourseLoader.swift native/RecordStore.swift native/MarkdownArchiveStore.swift native/KeyStore.swift native/HostSession.swift native/ShareServer.swift tests/share_checks.swift -framework JavaScriptCore -framework Network -framework Security -framework PDFKit -lsqlite3 -o /tmp/learning-share-checks
+xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache native/CourseLoader.swift native/RecordStore.swift native/MarkdownArchiveStore.swift native/KeyStore.swift native/AICredentials.swift native/AIConnection.swift native/OAuthLoopback.swift native/HostSession.swift native/ShareServer.swift tests/share_checks.swift -framework AppKit -framework JavaScriptCore -framework Network -framework Security -framework PDFKit -lsqlite3 -o /tmp/learning-share-checks
 /tmp/learning-share-checks "$PWD"
 ```
 
@@ -213,7 +220,7 @@ python3 scripts/release_mac.py --publish
 `tests/update_checks.swift` 使用獨立資料夾核對內建課程搬移、外部課程位置、SQLite／草稿重開、MD flush、保存失敗恢復與 AI 進行中保護。可用以下方式執行：
 
 ```sh
-xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache native/LibraryOrganization.swift native/LibraryActions.swift native/AppStore.swift native/CourseLibrary.swift native/CourseLoader.swift native/RecordStore.swift native/MarkdownArchiveStore.swift native/KeyStore.swift native/HostSession.swift native/ShareServer.swift tests/update_checks.swift -I native/CArchive -larchive -framework SwiftUI -framework JavaScriptCore -framework Network -framework Security -framework PDFKit -lsqlite3 -o /tmp/learning-update-checks
+xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache native/LibraryOrganization.swift native/LibraryActions.swift native/AppStore.swift native/CourseLibrary.swift native/CourseLoader.swift native/RecordStore.swift native/MarkdownArchiveStore.swift native/KeyStore.swift native/AICredentials.swift native/AIConnection.swift native/OAuthLoopback.swift native/HostSession.swift native/ShareServer.swift tests/update_checks.swift -I native/CArchive -larchive -framework SwiftUI -framework JavaScriptCore -framework Network -framework Security -framework PDFKit -lsqlite3 -o /tmp/learning-update-checks
 /tmp/learning-update-checks "$PWD"
 ```
 
@@ -238,7 +245,7 @@ App 使用 macOS 系統 libarchive 串流讀取 ZIP，不依賴使用者安裝 P
 
 ```sh
 python3 tests/create_course_packages.py /tmp/learningshelf-course-fixtures
-xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache -I native/CArchive native/LibraryOrganization.swift native/LibraryActions.swift native/AppStore.swift native/CourseLibrary.swift native/CourseLoader.swift native/RecordStore.swift native/MarkdownArchiveStore.swift native/KeyStore.swift native/HostSession.swift native/ShareServer.swift tests/course_library_checks.swift -framework SwiftUI -framework JavaScriptCore -framework Network -framework Security -framework PDFKit -lsqlite3 -larchive -o /tmp/learning-course-library-checks
+xcrun swiftc -swift-version 5 -parse-as-library -module-cache-path .swift-cache -I native/CArchive native/LibraryOrganization.swift native/LibraryActions.swift native/AppStore.swift native/CourseLibrary.swift native/CourseLoader.swift native/RecordStore.swift native/MarkdownArchiveStore.swift native/KeyStore.swift native/AICredentials.swift native/AIConnection.swift native/OAuthLoopback.swift native/HostSession.swift native/ShareServer.swift tests/course_library_checks.swift -framework SwiftUI -framework JavaScriptCore -framework Network -framework Security -framework PDFKit -lsqlite3 -larchive -o /tmp/learning-course-library-checks
 /tmp/learning-course-library-checks "$PWD" /tmp/learningshelf-course-fixtures
 ```
 
@@ -285,3 +292,7 @@ App 依 IMAGE_MAP.json 的 sourceImage 與 crop 比例座標，在背景從原 P
 每張圖用 teachingBlockIds 對應同主題、忽略 contextOnly 後相鄰的主要教學區塊；裁圖另核對來源像素、原教材引用與實際頁序，封裝後再次比對。這能抓出錯誤來源、改過像素與明顯遠離段落的對照，不能自動證明所有語意上的配圖需求都已標出，或所有箭頭、圖例都被完整保留；仍需視覺審閱。相鄰區塊也可能在小視窗分成前後兩個物理頁。舊課程的閱讀及一般 ZIP 匯入不受這些新製課檢查影響；既有教材不會自動重排，需重新製作或更新課程內容。
 
 `check_authoring.py` 另包含真實 PDF 局部渲染／座標與顏色、最終裁圖核對回合、自動匯入、Q&A 詳述、竄改像素、遠離段落、越界及連結路徑拒絕檢查。這組 Codex 使用測試替身，與真正 Codex 的製課測試分開報告。
+
+### Q&A 帳號與保存回歸
+
+`python3 scripts/check_ai.py` 使用隔離憑證目錄、記憶體 RSA 測試簽章及 loopback 模擬服務，驗證 PKCE／state／nonce／JWKS、帳號範圍、模型、輪替 refresh、撤銷、隱藏詳述上下文、取消與無自動 API 備援，以及真實 URLSession 的 SSE 完成／中斷。`node tests/ai-settings-browser-checks.cjs` 驗證設定介面與窄螢幕。測試不使用真實帳號額度；首次真人登入與真實方案計費仍須在 App 中確認。詳見 [Q&A 連線說明](docs/qa-accounts-0.2.4.md)。

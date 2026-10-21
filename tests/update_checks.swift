@@ -13,6 +13,7 @@ import Foundation
         }
         let data = temp.appendingPathComponent("data")
         let store = AppStore(resources: resources, dataDirectory: data)
+        try store.session.setKey("fixture-key-survives-app-replacement", remember: true)
         let entry = store.entries.first { $0.id == "example-linear-algebra" }!
         assert(entry.bundledFolder == "linear-algebra")
         var legacy = entry
@@ -45,6 +46,15 @@ import Foundation
         try await store.prepareToQuit()
         assert(flushed && store.isPreparingToQuit)
         let reopened = try RecordStore(folder: data).load(course.id)!
+        let replacementResources = temp.appendingPathComponent("Replacement.app/Contents/Resources")
+        try FileManager.default.createDirectory(at: replacementResources, withIntermediateDirectories: true)
+        for (source, target) in [("web", "Web"), ("courses", "Courses")] {
+            try FileManager.default.createSymbolicLink(at: replacementResources.appendingPathComponent(target), withDestinationURL: root.appendingPathComponent(source))
+        }
+        let replacement = AppStore(resources: replacementResources, dataDirectory: data)
+        assert(replacement.session.activeKey == "fixture-key-survives-app-replacement", "a replacement app at another path retains the saved API key")
+        try replacement.session.setKey("", remember: false)
+        assert(replacement.session.activeKey == "fixture-key-survives-app-replacement", "changing settings without a key cannot erase the saved value")
         assert((reopened["notes"] as! [String: String])["vector"] == "更新前最後一筆筆記")
         assert((reopened["qaDrafts"] as! [String: String])["vector"] == "尚未送出的問題")
         let archive = try String(contentsOf: MarkdownArchiveStore(folder: data).target(course.id), encoding: .utf8)

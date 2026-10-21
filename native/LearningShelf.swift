@@ -11,7 +11,7 @@ import UniformTypeIdentifiers
         WindowGroup("學習工具") {
             VStack(spacing:0) {
                 if let course=store.selected {
-                    if !store.shareURL.isEmpty { VStack(alignment:.leading,spacing:4) { Text("平板筆記與 Q&A 同步至此 Mac；AI 使用此 Mac 的 API 設定。").font(.system(size:12)).foregroundColor(.secondary);HStack {Text(store.shareURL).font(.system(size:12,design:.monospaced)).textSelection(.enabled);Button("複製網址"){NSPasteboard.general.clearContents();NSPasteboard.general.setString(store.shareURL,forType:.string)};Spacer();Button("停止分享"){store.toggleShare()} } }.padding(10).background(Color.gray.opacity(0.07)) }
+                    if !store.shareURL.isEmpty { VStack(alignment:.leading,spacing:4) { Text("平板筆記與 Q&A 同步至此 Mac；AI 使用此 Mac 的 AI 連線設定。").font(.system(size:12)).foregroundColor(.secondary);HStack {Text(store.shareURL).font(.system(size:12,design:.monospaced)).textSelection(.enabled);Button("複製網址"){NSPasteboard.general.clearContents();NSPasteboard.general.setString(store.shareURL,forType:.string)};Spacer();Button("停止分享"){store.toggleShare()} } }.padding(10).background(Color.gray.opacity(0.07)) }
                     WebReader(store:store,course:course).id(course.token)
                 } else { CourseHome(store:store,updater:updater) }
             }

@@ -120,6 +120,11 @@ dialog::backdrop { background:#23382a45; }
 .dialog-head { gap:12px; align-items:flex-start; }
 .dialog-head h2 { font-size:22px; }
 dialog textarea { border-radius:9px; font-size:13px; }
+#api-settings { width:min(520px,calc(100vw - 32px)); max-height:calc(100dvh - 40px); overflow:auto; }
+#api-settings select { width:100%; min-height:40px; padding:8px; border:1px solid var(--line); border-radius:8px; background:white; color:inherit; font:inherit; }
+#chatgpt-fields { display:grid; gap:12px; }
+#chatgpt-fields[hidden] { display:none; }
+#chatgpt-fields p { margin:0; }
 .note-label { font-size:13px; font-weight:500; }
 #note { font-family:inherit; font-size:16px; min-height:190px; line-height:1.9; padding:14px; }
 .note-topic { color:var(--accent); background:#f0f5ec; border-radius:8px; padding:9px 12px; }

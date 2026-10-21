@@ -30,6 +30,7 @@ struct CatalogEntry: Codable, Identifiable {
     let loader: CourseLoader
     let library: CourseLibrary
     let session: HostSession
+    let aiConnection: AIConnection
     let records: RecordStore
     @Published var showsAuthoring = false
     lazy var authoringJobs = CourseAuthoringStore(resources: resources, dataDirectory: records.folder)
@@ -64,7 +65,14 @@ struct CatalogEntry: Codable, Identifiable {
             loader = try CourseLoader(webRoot: resources.appendingPathComponent("Web"))
             records = try RecordStore(folder: data)
             library = try CourseLibrary(dataDirectory: data)
-            session = try HostSession(webRoot: resources.appendingPathComponent("Web"), records: records, transport: transport)
+            let normalData = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("LearningShelf")
+            aiConnection = AIConnection(directory: data.appendingPathComponent("Credentials"), legacyKey: {
+                // Isolated tests and alternate data profiles must never read the user's real credentials.
+                data.standardizedFileURL == normalData.standardizedFileURL ? try KeyStore.loadChecked() : nil
+            }, legacyClear: {
+                if data.standardizedFileURL == normalData.standardizedFileURL { try KeyStore.clearChecked() }
+            })
+            session = try HostSession(webRoot: resources.appendingPathComponent("Web"), records: records, transport: transport, aiConnection: aiConnection)
         } catch { fatalError("App 初始化失敗：\(error.localizedDescription)") }
         if let raw = try? Data(contentsOf: catalogURL), let list = try? JSONDecoder().decode([CatalogEntry].self, from: raw) { entries = list }
         else {
